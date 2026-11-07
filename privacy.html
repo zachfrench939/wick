@@ -4,59 +4,72 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Wick privacy notice</title>
-  <meta name="description" content="Wick stores a best score, today's category and result, a daily streak, and a sound setting on this device. Score comparison, when switched on, sends only a score, a category label, a day number, and a random device ID.">
+  <meta name="description" content="What Wick stores on this device, what a scored game sends, and what an optional account stores.">
   <meta name="theme-color" content="#2046c7">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://gc.zgo.at; connect-src 'self' https://hlnlkcdmtnbzouomcxcg.supabase.co https://zachfrenchwickquiz.goatcounter.com; base-uri 'self'; object-src 'none'">
   <link rel="icon" href="favicon.ico" sizes="48x48">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="wrap">
+  <div class="wrap" id="wrap">
     <a class="skip" href="#main">Skip to content</a>
     <header class="top">
+      <nav class="site-nav" aria-label="Site">
+        <a href="index.html">Play</a>
+        <a href="about.html">How to play</a>
+        <a href="privacy.html" aria-current="page">Privacy</a>
+        <a href="cookies.html">Cookies</a>
+        <a href="auth.html" data-auth-link>Account</a>
+        <button type="button" data-manage-cookies>Manage cookies</button>
+      </nav>
       <p class="brand"><a class="logo" href="index.html"><img src="brand/logo-icon.svg" alt="" width="36" height="36"><span>Wick</span></a></p>
     </header>
     <main id="main" class="prose" tabindex="-1">
       <h1>Privacy notice</h1>
-      <p>Wick is a quiz on this website. Anyone can play it, including children. This notice is in plain English. It is not a legal essay.</p>
-      <h2>What Wick does not do</h2>
+      <p>This notice describes what the Wick pages in this project actually do. It is not a legal opinion, and it is not a statement that the site meets every UK requirement. Facts the operator still has to supply are listed at the end.</p>
+      <p>Storage and access technologies, including local storage, are covered by PECR as well as by data protection law where personal data is involved. The ICO’s storage and access guidance was finalised on 29 April 2026, after the Data (Use and Access) Act changes. One of the five exceptions can cover some aggregate statistics when the purpose is only to improve the service, people are told, and there is a simple free way to object. Wick does not rely on that exception. Optional page counts stay off until a visitor allows them. That is a choice for this site. It is not a claim that every analytics tool always needs consent.</p>
+      <h2>Who is responsible</h2>
+      <p>The pages do not name a controller, a postal address, or an email address. The public site wickquiz.com is served by GitHub Pages from the repository zachfrench939/wick. An older notice linked zachfrench939.github.io. That repository does not hold the wickquiz.com custom domain. Publishing location is not the same as a completed controller identification.</p>
+      <h2>Playing without an account</h2>
+      <p>Anyone can play, including children. The questions are written to be family-friendly. The site does not ask for an age. No children’s assessment or DPIA is included in this repository. Offering the quiz, and especially an optional email account, to children needs a decision by the operator under the Children’s Code before this should be treated as settled. This notice does not say that assessment has been done.</p>
+      <p>A scored daily game sends four things to the Supabase project <code>hlnlkcdmtnbzouomcxcg</code>: the day number, the category label, how many answers were right (0 to 100), and a random device id. Practice is not sent. The browser uses the project’s publishable key. That key is meant to be public. The anon role in the checked schema can insert a score and call two aggregate functions. It is not given a select grant on the score table in that schema. This notice does not repeat a service-role key.</p>
+      <p>On 7 November 2026 the project record showed region eu-west-2 (London, United Kingdom) and status active. The database timezone read as UTC. London is not described here as the EU. A contract, a processor role, and a lawful basis were not confirmed for this notice. The earlier notice’s “legitimate interests” sentence is withdrawn until the operator records a basis.</p>
+      <p>The same check found a scheduled job, <code>wick-delete-scores-older-than-12-months</code>, set for 03:15 UTC each day, deleting <code>daily_scores</code> rows older than 12 months. That confirms the job definition, not every past run, and not backups or hosting logs.</p>
+      <p>The random device id is created when a scored result is submitted, then kept until site data is cleared. It is a persistent identifier. This notice does not call it strictly necessary in the legal sense. It is not copied into an account, and it is not sent to GoatCounter.</p>
+      <h2>Optional account</h2>
+      <p>Email and password sign-up, sign-in, sign-out, and password reset are available and are not required to play. A public Auth settings read on 7 November 2026 showed email sign-in enabled, sign-up enabled, and <code>mailer_autoconfirm</code> false, so a new account needs an email confirmation before a session starts. Phone sign-in was off. This work did not change Auth settings and did not send a confirmation or reset email.</p>
+      <p>The password is sent to Supabase Auth and is not written into local storage by these pages. After a session exists, this device stores the access token, refresh token, expiry, user id, and email under <code>wick-auth-session</code>. Logging out removes that record from this device. The quiz keys stay. The pages do not read <code>user_metadata</code> to grant anything. There is no paid entitlement.</p>
+      <p>Confirmation and reset links are requested for <code>https://wickquiz.com/auth.html</code> only. Tokens that arrive in the address are removed from the bar after they are read. Whether the project’s Site URL and redirect allow-list match that address was not confirmed. Account deletion and a rights process are not built here. How long Auth keeps an email is not stated in this repository.</p>
+      <h2>Optional page counts</h2>
+      <p>If a visitor allows it, and only on wickquiz.com, the page can load <code>https://gc.zgo.at/count.js</code> and send one page-load count to <code>https://zachfrenchwickquiz.goatcounter.com/count</code>. The count is skipped when Do Not Track or Global Privacy Control is on, when the address has a query string, and on any other host, so local and preview visits are not sent. The payload is limited to a short allow-listed path, an empty referrer field, and a request to count the load rather than stitch a visit. Screen width and the query string are stripped before send. The page does not send the device id, email, answers, or password.</p>
+      <p>GoatCounter’s own documentation (privacy page dated 8 June 2025) says visitor counting does not use a cookie or local storage, that an in-memory combination of site, IP address, and user agent can last up to 8 hours for its default visit deduplication, that the operator is Martin Tournoij in Ireland, and that hosting is at Hetzner in Finland and Germany. Those are their statements. A cookieless counter is not automatically outside PECR.</p>
+      <p>A coordinator, while signed in, reported that the dashboard is login-only, the timezone is Europe/London, the connected domain is wickquiz.com, and individual pageview collection is off. Those settings were not changed. GoatCounter account email verification was still pending. Browser, system, location, and language collection switches, and the dashboard sessions switch, were not part of that check. The dashboard is not embedded on Wick and no GoatCounter API key is in these files. Login cookies for the GoatCounter site, described in their documentation as remembering a signed-in operator and short messages, are not set by the public Wick pages.</p>
+      <h2>What still has to be decided</h2>
       <ul>
-        <li>It does not use cookies.</li>
-        <li>It does not use analytics, advertising, or other trackers.</li>
-        <li>It does not show ads.</li>
-        <li>It does not load scripts, fonts, or images from other websites.</li>
-        <li>It does not ask for your name, email, age, or any other personal data.</li>
-        <li>It does not use a third-party script.</li>
+        <li>Controller name, address, and contact email.</li>
+        <li>Lawful basis for rankings, for the device id, for optional accounts, and for page counts.</li>
+        <li>A deletion and rights process, including how a person asks about an account or a score.</li>
+        <li>Whether accounts should be offered where children play, and a Children’s Code / DPIA decision.</li>
+        <li>Site URL and redirect allow-list for https://wickquiz.com/auth.html, and a test that confirmation email actually arrives.</li>
+        <li>GoatCounter email verification, and the unconfirmed collection switches named above.</li>
+        <li>A legal review before anyone describes the site as compliant. This page does not do that.</li>
       </ul>
-      <h2>What stays on this device</h2>
-      <p>Wick uses the browser’s local storage for these things only:</p>
-      <ul>
-        <li>your best score</li>
-        <li>today’s scored result, including which category you picked, so that category can be played once</li>
-        <li>how many days in a row you have played, the best run of days, and one covered miss so a single forgotten day does not wipe a long streak</li>
-        <li>the dates you have played and the score for each of those days, so the calendar, the week dots, and your own averages can be shown</li>
-        <li>whether sound is on or off</li>
-        <li>a random device ID, used so today’s scored game is counted once</li>
-      </ul>
-      <p>The best score, today’s result, the daily streak, the dates you played, and the sound setting stay on this device. They are strictly necessary for the game. The random device ID also lives in local storage. It is strictly necessary for score comparison, so one device is counted once for each category that day. It is not your name. Today’s rankings use only the day, the category, the score, and that ID. They show no usernames. Clearing this site’s data in your browser removes all of it.</p>
-      <h2>Score comparison</h2>
-      <p>After a scored daily game, Wick sends four things to Supabase, the company that stores the comparison: the day number, the category you played (a short label such as geography), how many answers you got right (a number from 0 to 100), and the random device ID. Practice runs are not sent. Supabase is the processor. The project is in the EU, in the London region. The lawful basis is legitimate interests: showing how a result compares with other people who played that category that day, without identifying anyone. Supabase deletes those rows automatically after 12 months. Wick does not use a third-party script for this. The page calls Supabase itself.</p>
-      <h2>Children</h2>
-      <p>The questions are written to be family-friendly. Wick does not collect personal data from children or from anyone else.</p>
-      <h2>Cookie policy</h2>
-      <p>Wick does not use cookies. It does not set a cookie for login, advertising, or measurement. The things listed above stay in the browser’s local storage because the game needs them: your best score, today’s result, the daily streak and badges, the sound setting, and the random device ID. You can clear that storage in your browser. A phone buzz on a long answer streak, if you have sound switched on, is not stored.</p>
-      <h2>Contact</h2>
-      <p>Contact: via the GitHub repository.</p>
-      <p><a href="https://github.com/zachfrench939/zachfrench939.github.io">github.com/zachfrench939/zachfrench939.github.io</a></p>
-      <p><a href="about.html">About and terms</a></p>
+      <p>Storage keys and lifetimes are listed in the <a href="cookies.html">cookie and storage notice</a>.</p>
     </main>
     <footer>
       <nav aria-label="Information">
         <a href="index.html">Back to the quiz</a>
-        <a href="about.html">About and terms</a>
+        <a href="cookies.html">Cookies and storage</a>
+        <button type="button" data-manage-cookies>Manage cookies</button>
       </nav>
     </footer>
   </div>
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <script src="consent.js"></script>
+  <script src="analytics.js"></script>
 </body>
 </html>

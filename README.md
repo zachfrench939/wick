@@ -13,9 +13,13 @@ The free game is the one on the site today.
 - Practice stays free. It can be mixed, or any category, and it is not scored.
 - Past days cannot be played. The calendar names that day’s categories and points at Wick Pro.
 
-Wick Pro is not built yet. There is no price, no payment, and no email collection. “Notify me” only says that it is coming soon. A future `window.WICK_IS_PRO = true`, set by a login, is the switch that removes the locks: all three categories each day, and past days in the archive. Rankings stay per category either way.
+The free game scores one category a day. `window.WICK_IS_PRO` remains in the code as a later switch for a wider game. Payments and paid entitlements are not part of this site.
 
-Published with GitHub Pages at [wickquiz.com](https://wickquiz.com).
+An account is optional. Email confirmation is required by the live Auth settings (`mailer_autoconfirm` false on 7 November 2026). Before real sign-ups, set the Supabase Site URL to `https://wickquiz.com` and allow `https://wickquiz.com/auth.html` as a redirect. This repository does not change that configuration and does not send confirmation email. Rankings keep the device id already on the browser. Signing in does not copy it onto the account.
+
+Optional GoatCounter page counts use `https://zachfrenchwickquiz.goatcounter.com/count` and `https://gc.zgo.at/count.js`. The script loads only after an opt-in, only on wickquiz.com, and not when Do Not Track or Global Privacy Control is set. The dashboard is not embedded. A signed-in check reported Europe/London, a login-only dashboard, and individual pageviews off. GoatCounter email verification was still pending. Nothing here is a statement of legal compliance.
+
+Published with GitHub Pages from this repository at [wickquiz.com](https://wickquiz.com). The repository zachfrench939.github.io does not serve that domain.
 
 ## Retention design
 

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wick account</title>
+  <meta name="description" content="Optional Wick account. The daily quiz still works without one.">
+  <meta name="theme-color" content="#2046c7">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://gc.zgo.at; connect-src 'self' https://hlnlkcdmtnbzouomcxcg.supabase.co https://zachfrenchwickquiz.goatcounter.com; base-uri 'self'; object-src 'none'">
+  <link rel="icon" href="favicon.ico" sizes="48x48">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="wrap" id="wrap">
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="top">
+      <nav class="site-nav" aria-label="Site">
+        <a href="index.html">Play</a>
+        <a href="about.html">How to play</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="cookies.html">Cookies</a>
+        <a href="auth.html" aria-current="page" data-auth-link>Account</a>
+        <button type="button" data-manage-cookies>Manage cookies</button>
+      </nav>
+      <p class="brand"><a class="logo" href="index.html"><img src="brand/logo-icon.svg" alt="" width="36" height="36"><span>Wick</span></a></p>
+    </header>
+    <main id="main" class="prose auth-main" tabindex="-1">
+      <h1>Account</h1>
+      <p>The quiz works with no account. An account is optional. It does not move the streak, the scores, or the rankings id stored on this device, and it does not unlock Wick Pro.</p>
+      <p id="auth-status" class="status-line" role="status"></p>
+      <div id="auth-loading">Checking this device.</div>
+      <section id="panel-signed-in" hidden>
+        <h2>Signed in</h2>
+        <p id="signed-in-email"></p>
+        <p>Signing out removes the session from this device. The quiz progress on this device stays.</p>
+        <div class="auth-actions">
+          <button type="button" id="logout-btn">Log out</button>
+          <button type="button" class="secondary" id="show-password-btn">Change password</button>
+        </div>
+      </section>
+      <section id="panel-password" hidden>
+        <h2 id="password-heading">Choose a new password</h2>
+        <form id="password-form">
+          <div class="field" id="current-password-field" hidden>
+            <label for="current-password">Current password</label>
+            <input id="current-password" name="current-password" type="password" autocomplete="current-password">
+          </div>
+          <div class="field">
+            <label for="new-password">New password</label>
+            <input id="new-password" name="new-password" type="password" autocomplete="new-password" required minlength="8" maxlength="72">
+          </div>
+          <div class="field">
+            <label for="new-password-2">New password again</label>
+            <input id="new-password-2" name="new-password-2" type="password" autocomplete="new-password" required minlength="8" maxlength="72">
+          </div>
+          <button type="submit">Save password</button>
+        </form>
+      </section>
+      <section id="panel-forms">
+        <div class="auth-switch" role="tablist" aria-label="Account forms">
+          <button type="button" id="tab-login" role="tab" aria-selected="true" aria-controls="login-form">Log in</button>
+          <button type="button" id="tab-signup" role="tab" aria-selected="false" aria-controls="signup-form">Create account</button>
+          <button type="button" id="tab-reset" role="tab" aria-selected="false" aria-controls="reset-form">Reset password</button>
+        </div>
+        <form id="login-form">
+          <div class="field">
+            <label for="login-email">Email</label>
+            <input id="login-email" name="email" type="email" autocomplete="username" required>
+          </div>
+          <div class="field">
+            <label for="login-password">Password</label>
+            <input id="login-password" name="password" type="password" autocomplete="current-password" required minlength="8" maxlength="72">
+          </div>
+          <button type="submit">Log in</button>
+        </form>
+        <form id="signup-form" hidden>
+          <p>Creating an account asks Supabase Auth to store this email. Confirmation is required before a session starts. This page does not send the message itself until you press the button.</p>
+          <div class="field">
+            <label for="signup-email">Email</label>
+            <input id="signup-email" name="email" type="email" autocomplete="email" required>
+          </div>
+          <div class="field">
+            <label for="signup-password">Password</label>
+            <input id="signup-password" name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="72">
+          </div>
+          <button type="submit">Create account</button>
+        </form>
+        <form id="reset-form" hidden>
+          <p>The same notice is shown whether or not that email already has an account.</p>
+          <div class="field">
+            <label for="reset-email">Email</label>
+            <input id="reset-email" name="email" type="email" autocomplete="email" required>
+          </div>
+          <button type="submit">Send reset link</button>
+        </form>
+      </section>
+      <p><a href="privacy.html">Privacy</a> · <a href="cookies.html">Cookies and storage</a></p>
+    </main>
+  </div>
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <script src="auth-page.js"></script>
+  <script src="consent.js"></script>
+  <script src="analytics.js"></script>
+</body>
+</html>
