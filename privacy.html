@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Wick privacy notice</title>
-  <meta name="description" content="Wick stores a best score, today's result, a daily streak, and a sound setting on this device. Score comparison, when switched on, sends only a score, a day number, and a random device ID.">
+  <meta name="description" content="Wick stores a best score, today's category and result, a daily streak, and a sound setting on this device. Score comparison, when switched on, sends only a score, a category label, a day number, and a random device ID.">
   <meta name="theme-color" content="#2046c7">
   <link rel="icon" href="favicon.ico" sizes="48x48">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -33,15 +33,15 @@
       <p>Wick uses the browser’s local storage for these things only:</p>
       <ul>
         <li>your best score</li>
-        <li>today’s scored result, so the daily game can be played once</li>
+        <li>today’s scored result, including which category you picked, so that category can be played once</li>
         <li>how many days in a row you have played, the best run of days, and one covered miss so a single forgotten day does not wipe a long streak</li>
         <li>the dates you have played and the score for each of those days, so the calendar, the week dots, and your own averages can be shown</li>
         <li>whether sound is on or off</li>
         <li>a random device ID, used so today’s scored game is counted once</li>
       </ul>
-      <p>The best score, today’s result, the daily streak, the dates you played, and the sound setting stay on this device. They are strictly necessary for the game. The random device ID also lives in local storage. It is strictly necessary for score comparison, so one device is counted once a day. It is not your name. Today’s rankings use only the day, the score, and that ID. They show no usernames. Clearing this site’s data in your browser removes all of it.</p>
+      <p>The best score, today’s result, the daily streak, the dates you played, and the sound setting stay on this device. They are strictly necessary for the game. The random device ID also lives in local storage. It is strictly necessary for score comparison, so one device is counted once for each category that day. It is not your name. Today’s rankings use only the day, the category, the score, and that ID. They show no usernames. Clearing this site’s data in your browser removes all of it.</p>
       <h2>Score comparison</h2>
-      <p>After a scored daily game, Wick sends three things to Supabase, the company that stores the comparison: the day number, how many answers you got right (a number from 0 to 100), and the random device ID. Practice runs are not sent. Supabase is the processor. The project is in the EU, in the London region. The lawful basis is legitimate interests: showing how a result compares with other people who played that day, without identifying anyone. Supabase deletes those rows automatically after 12 months. Wick does not use a third-party script for this. The page calls Supabase itself.</p>
+      <p>After a scored daily game, Wick sends four things to Supabase, the company that stores the comparison: the day number, the category you played (a short label such as geography), how many answers you got right (a number from 0 to 100), and the random device ID. Practice runs are not sent. Supabase is the processor. The project is in the EU, in the London region. The lawful basis is legitimate interests: showing how a result compares with other people who played that category that day, without identifying anyone. Supabase deletes those rows automatically after 12 months. Wick does not use a third-party script for this. The page calls Supabase itself.</p>
       <h2>Children</h2>
       <p>The questions are written to be family-friendly. Wick does not collect personal data from children or from anyone else.</p>
       <h2>Cookie policy</h2>

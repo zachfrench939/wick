@@ -333,6 +333,135 @@ footer a,
 
 .rules li { margin: 0.3rem 0; }
 
+.category-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin: 0.7rem 0 0.4rem;
+}
+
+.category-card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: left;
+  min-height: 76px;
+  padding: 0.7rem 0.85rem;
+  border: 0;
+  border-radius: 18px;
+  background: var(--card);
+  color: var(--navy);
+  font: inherit;
+  font-weight: 700;
+  box-shadow: 0 6px 0 var(--shadow);
+  cursor: pointer;
+}
+
+.category-card:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 var(--shadow);
+}
+
+.category-card.is-locked {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.category-card.is-done {
+  box-shadow: 0 6px 0 #0a5c34;
+}
+
+.category-emoji {
+  flex: none;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.category-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.05rem;
+}
+
+.category-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.category-teaser {
+  font-size: 0.86rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.category-status {
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.tomorrow,
+.home-nudge,
+.archive-line {
+  margin: 0.35rem 0;
+  font-weight: 800;
+}
+
+.practice-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin: 0.6rem 0;
+}
+
+.practice-label {
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.practice-row select {
+  min-height: 48px;
+  border-radius: 14px;
+  border: 2px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 800;
+  padding: 0.35rem 0.7rem;
+}
+
+.text-btn {
+  min-height: 44px;
+  padding: 0.2rem 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.rank-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.4rem 0 0.6rem;
+}
+
+.rank-switch button {
+  width: auto;
+  min-height: 44px;
+  border-radius: 999px;
+  box-shadow: none;
+}
+
+.rank-switch button.is-on {
+  background: var(--gold);
+  color: var(--navy);
+}
+
 .best-label {
   margin: 0.4rem 0 0;
   font-size: 0.8rem;
@@ -664,6 +793,16 @@ footer a {
   margin: 0 0 0.7rem;
 }
 .cal-head, .cal-day { text-align: center; font-size: 0.72rem; font-weight: 800; }
+button.cal-day {
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--navy);
+  border: 0;
+  width: 100%;
+  cursor: pointer;
+}
+.modal-card .rank-switch button { width: auto; min-height: 44px; }
 .cal-day { border-radius: 7px; padding: 0.28rem 0; background: #e7ecfb; }
 .cal-day.is-on { background: #2046c7; color: #fff; }
 .cal-day.is-today { outline: 2px solid #ffb703; }

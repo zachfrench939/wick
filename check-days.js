@@ -12,7 +12,7 @@ var context = {
   console: console
 };
 vm.createContext(context);
-["questions.js", "questions-extra.js", "questions-more.js", "daily.js"].forEach(function (name) {
+["questions.js", "questions-extra.js", "questions-more.js", "questions-categories.js", "daily.js"].forEach(function (name) {
   vm.runInContext(fs.readFileSync(path.join(dir, name), "utf8"), context, { filename: name });
 });
 
@@ -153,6 +153,83 @@ reportWindow("2026-11-07", "2027-01-07");
 var sameA = daily.pickQuestions(bank, "2026-11-07", 100).map(function (q) { return q.q; }).join("|");
 var sameB = daily.pickQuestions(bank, "2026-11-07", 100).map(function (q) { return q.q; }).join("|");
 check("same day is stable", sameA === sameB);
+
+function isRealMaths(item) {
+  if (!item) return false;
+  if (item.category === "Maths" || item.slug === "maths") return true;
+  var q = item.q || "";
+  if (/prime meridian|prime minister/i.test(q)) return false;
+  return /square root|\bsquared\b|cube root|\bcubed\b|percent|%|\bprime\b|Roman numeral/i.test(q);
+}
+
+function reportCategories(start, end) {
+  var dates = daysIn(start, end);
+  var dailyCats = context.window.WickDaily.CATEGORIES;
+  console.log("category pools");
+  dailyCats.forEach(function (cat) {
+    var size = daily.poolSize(bank, cat.slug);
+    console.log("  " + cat.slug + " " + size + " slots " + Math.floor(size / 60));
+  });
+  var minCount = {};
+  var maxCount = {};
+  var worstOverlap = {};
+  dates.forEach(function (date, index) {
+    var trio = daily.categoriesFor(date);
+    check(date + " trio size", trio.length === 3, String(trio.length));
+    var slugs = {};
+    trio.forEach(function (cat) { slugs[cat.slug] = true; });
+    check(date + " trio unique", Object.keys(slugs).length === 3);
+    if (index > 0) {
+      var prev = daily.categoriesFor(dates[index - 1]).map(function (cat) { return cat.slug; }).sort().join();
+      var now = trio.map(function (cat) { return cat.slug; }).sort().join();
+      check(date + " trio changes", prev !== now, prev);
+    }
+  });
+  dailyCats.forEach(function (cat) {
+    var loaded = dates.map(function (date) {
+      var list = daily.pickCategoryQuestions(bank, date, cat.slug, 60);
+      var stems = {};
+      var maths = 0;
+      var kinds = {};
+      var bad = 0;
+      list.forEach(function (item) {
+        var uniq = {};
+        (item.choices || []).forEach(function (choice) { uniq[choice] = true; });
+        if (!item || Object.keys(uniq).length !== 4 || item.choices.indexOf(item.answer) === -1) bad += 1;
+        if (stems[item.q]) bad += 1;
+        stems[item.q] = true;
+        if (isRealMaths(item)) {
+          maths += 1;
+          var kind = mathsKind(item.q);
+          if (kinds[kind]) check(date + " " + cat.slug + " maths kind", false, kind);
+          kinds[kind] = true;
+        }
+      });
+      check(date + " " + cat.slug + " count", list.length >= 60, String(list.length));
+      check(date + " " + cat.slug + " valid", bad === 0, String(bad));
+      if (cat.slug === "science") check(date + " science maths", maths >= 1 && maths <= 2, String(maths));
+      else check(date + " " + cat.slug + " maths", maths === 0, String(maths));
+      minCount[cat.slug] = minCount[cat.slug] == null ? list.length : Math.min(minCount[cat.slug], list.length);
+      maxCount[cat.slug] = Math.max(maxCount[cat.slug] || 0, list.length);
+      return stems;
+    });
+    var worst = 0;
+    for (var i = 0; i < loaded.length; i += 1) {
+      for (var j = i + 1; j <= i + 7 && j < loaded.length; j += 1) {
+        var shared = overlap(loaded[i], loaded[j]);
+        if (shared > worst) worst = shared;
+      }
+    }
+    worstOverlap[cat.slug] = worst;
+    check(cat.slug + " repeats within 7 days", worst === 0, String(worst));
+  });
+  console.log(start + " to " + end + " category days (" + dates.length + ")");
+  dailyCats.forEach(function (cat) {
+    console.log("  " + cat.slug + " questions/day " + minCount[cat.slug] + "-" + maxCount[cat.slug] + ", max overlap in 7 days " + worstOverlap[cat.slug]);
+  });
+}
+
+reportCategories("2026-11-07", "2027-01-07");
 
 if (failures.length) {
   console.error("FAILURES", failures.length);

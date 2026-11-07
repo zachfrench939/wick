@@ -40,7 +40,30 @@
     return null;
   }
 
-  function submitDailyScore(dayNumber, score) {
+  function postScore(payload) {
+    return fetch(endpoint("/rest/v1/daily_scores"), {
+      method: "POST",
+      headers: {
+        apikey: settings().key,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify(payload)
+    }).then(function (res) {
+      if (res.status === 409) return { ok: true, duplicate: true, categorySaved: !!payload.category };
+      return res.text().then(function (body) {
+        if (res.ok) return { ok: true, duplicate: false, categorySaved: !!payload.category };
+        if (body && body.indexOf("duplicate") !== -1) {
+          return { ok: true, duplicate: true, categorySaved: !!payload.category };
+        }
+        return { ok: false, duplicate: false, categorySaved: false };
+      });
+    }).catch(function () {
+      return { ok: false, duplicate: false, categorySaved: false };
+    });
+  }
+
+  function submitDailyScore(dayNumber, score, category) {
     try {
       if (!configured()) return Promise.resolve({ ok: false, skipped: true });
       var day = Number(dayNumber);
@@ -52,23 +75,15 @@
       if (value > 100) value = 100;
       var id = deviceId();
       if (!id) return Promise.resolve({ ok: false, skipped: true });
-      return fetch(endpoint("/rest/v1/daily_scores"), {
-        method: "POST",
-        headers: {
-          apikey: settings().key,
-          "Content-Type": "application/json",
-          Prefer: "return=minimal"
-        },
-        body: JSON.stringify({ day: day, score: value, device_id: id })
-      }).then(function (res) {
-        if (res.status === 409) return { ok: true, duplicate: true };
-        return res.text().then(function (body) {
-          if (res.ok) return { ok: true, duplicate: false };
-          if (body && body.indexOf("duplicate") !== -1) return { ok: true, duplicate: true };
-          return { ok: false, duplicate: false };
+      var payload = { day: day, score: value, device_id: id };
+      if (category) payload.category = category;
+      return postScore(payload).then(function (sent) {
+        if (sent.ok || !category) return sent;
+        var plain = { day: day, score: value, device_id: id };
+        return postScore(plain).then(function (again) {
+          again.categorySaved = false;
+          return again;
         });
-      }).catch(function () {
-        return { ok: false, duplicate: false };
       });
     } catch (err) {
       return Promise.resolve({ ok: false, skipped: true });
@@ -91,12 +106,16 @@
     }).catch(function () { return null; });
   }
 
-  function getDailyDistribution(dayNumber) {
-    return rpc("daily_distribution", { p_day: Number(dayNumber) });
+  function getDailyDistribution(dayNumber, category) {
+    var body = { p_day: Number(dayNumber) };
+    if (category) body.p_category = category;
+    return rpc("daily_distribution", body);
   }
 
-  function getDailyRank(dayNumber, score) {
-    return rpc("daily_rank", { p_day: Number(dayNumber), p_score: Number(score) });
+  function getDailyRank(dayNumber, score, category) {
+    var body = { p_day: Number(dayNumber), p_score: Number(score) };
+    if (category) body.p_category = category;
+    return rpc("daily_rank", body);
   }
 
   root.WickStats = {

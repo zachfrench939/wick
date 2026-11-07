@@ -17,7 +17,26 @@
     play: document.getElementById("screen-play"),
     end: document.getElementById("screen-end")
   };
-  var startBtn = document.getElementById("start-btn");
+  var categoryCards = document.getElementById("category-cards");
+  var pickPrompt = document.getElementById("pick-prompt");
+  var dayNote = document.getElementById("day-note");
+  var tomorrowLine = document.getElementById("tomorrow-line");
+  var homeNudge = document.getElementById("home-nudge");
+  var compareHome = document.getElementById("compare-home");
+  var practiceSelect = document.getElementById("practice-category");
+  var comeBack = document.getElementById("come-back");
+  var pickModal = document.getElementById("pick-confirm");
+  var pickCopy = document.getElementById("pick-copy");
+  var pickYes = document.getElementById("pick-yes");
+  var pickNo = document.getElementById("pick-no");
+  var proModal = document.getElementById("pro-modal");
+  var proCopy = document.getElementById("pro-copy");
+  var proSoon = document.getElementById("pro-soon");
+  var proNotify = document.getElementById("pro-notify");
+  var proClose = document.getElementById("pro-close");
+  var rankSwitch = document.getElementById("rank-switch");
+  var pendingSlug = "";
+  var pendingDate = "";
   var bestScoreEl = document.getElementById("best-score");
   var loadError = document.getElementById("load-error");
   var soundBtn = document.getElementById("sound-toggle");
@@ -92,6 +111,9 @@
   var warnedTen = false;
   var soundOn = false;
   var practice = false;
+  var runSlug = "";
+  var runDate = "";
+  var rankSlug = "";
   var blowingOut = false;
   var timeAddedMs = 0;
   var clockId = 0;
@@ -311,7 +333,11 @@
   }
 
   function renderStatus() {
-    counterEl.textContent = "QUESTION " + index + " OF " + deck.length;
+    var prefix = "";
+    if (runSlug && window.WickDaily.categoryBySlug(runSlug)) {
+      prefix = window.WickDaily.categoryBySlug(runSlug).name.toUpperCase() + " · ";
+    }
+    counterEl.textContent = prefix + "QUESTION " + index + " OF " + deck.length;
     scoreEl.textContent = "SCORE " + formatScore(score);
     streakEl.textContent = "STREAK " + streak;
   }
@@ -365,7 +391,12 @@
     index += 1;
     locked = false;
     mode = "play";
-    categoryEl.textContent = current.category;
+    if (runSlug && window.WickDaily.categoryBySlug(runSlug)) {
+      var meta = window.WickDaily.categoryBySlug(runSlug);
+      categoryEl.textContent = meta.emoji + " " + meta.name;
+    } else {
+      categoryEl.textContent = current.category;
+    }
     questionText.textContent = current.q;
     pop.textContent = "";
     pop.classList.remove("is-show", "is-bad");
@@ -488,7 +519,7 @@
   }
 
   function reasonLabel(reason) {
-    if (reason === "bank") return "All 100 done";
+    if (reason === "bank") return "All questions done";
     if (reason === "end") return "You ended it";
     return "Time's up";
   }
@@ -499,28 +530,24 @@
   }
 
   function buildShare(result) {
-    var lines = ["Wick #" + result.dayNumber];
-    lines.push(result.practice ? "Practice · not scored" : "1 minute · " + result.roundSize + " questions");
-    if (!result.practice && result.tierLabel) {
-      lines[0] = "Wick #" + result.dayNumber + ", " + result.correct + " correct, " + result.tierLabel;
-    } else if (!result.practice) {
-      lines[0] = "Wick #" + result.dayNumber + ", " + result.correct + " correct";
+    var lines = [];
+    if (!result.practice && result.categoryMeta) {
+      lines.push("Wick · " + result.shortDate + " · " + result.categoryMeta.emoji + " " + result.categoryMeta.name + " " + result.correct + " 🔥");
+    } else if (result.practice) {
+      var practiceName = result.categoryMeta ? (" · " + result.categoryMeta.emoji + " " + result.categoryMeta.name) : "";
+      lines.push("Wick · Practice" + practiceName);
+    } else {
+      lines.push("Wick #" + result.dayNumber + ", " + result.correct + " correct");
     }
-    lines.push("Score " + formatScore(result.score));
-    if (result.newBest) lines.push("New best on this device");
-    lines.push(result.answered + " of " + result.roundSize + " · " + result.accuracy);
-    lines.push("Best streak " + result.bestStreak);
-    if (!result.practice) lines.push("Daily streak " + result.dailyStreak);
-    if (result.timeAdded) lines.push("Time added " + (result.timeAdded / 1000).toFixed(1) + "s");
-    lines.push("");
     if (result.results.length) {
+      lines.push("");
       for (var i = 0; i < result.results.length; i += 8) {
         lines.push(result.results.slice(i, i + 8).map(function (ok) {
           return ok ? "🟩" : "🟥";
         }).join(""));
       }
-      lines.push("");
     }
+    lines.push("");
     lines.push(SHARE_URL);
     return lines.join("\n");
   }
@@ -559,9 +586,10 @@
   function openConfirm() {
     if (ended || mode === "start" || mode === "end" || mode === "ending") return;
     clearTimeout(advanceId);
+    var runName = runSlug && window.WickDaily.categoryBySlug(runSlug);
     confirmCopy.textContent = practice
       ? "This practice run is not scored."
-      : "This is your one scored Wick for today.";
+      : ("This is your one scored go" + (runName ? " at " + runName.name : "") + " today.");
     confirmEl.hidden = false;
     document.body.classList.add("modal-open");
     wrap.inert = true;
@@ -605,7 +633,7 @@
     return { tierLabel: label, text: text };
   }
 
-  function showComparison(el, dayNumber, correctCount, isPractice, doSubmit) {
+  function showComparison(el, dayNumber, correctCount, isPractice, doSubmit, category) {
     if (!el) return;
     el.hidden = true;
     el.textContent = "";
@@ -615,25 +643,28 @@
     var score = Math.max(0, Math.min(100, Math.round(Number(correctCount)) || 0));
     var start;
     try {
-      start = doSubmit ? stats.submitDailyScore(dayNumber, score) : Promise.resolve({ ok: true });
+      start = doSubmit ? stats.submitDailyScore(dayNumber, score, category) : Promise.resolve({ ok: true, categorySaved: true });
     } catch (err) {
       return;
     }
     start.then(function (sent) {
       if (doSubmit && sent && sent.ok === false && !sent.duplicate) return null;
+      if (category && sent && sent.categorySaved === false) return null;
       return Promise.all([
-        stats.getDailyDistribution(dayNumber),
-        stats.getDailyRank(dayNumber, score)
+        stats.getDailyDistribution(dayNumber, category),
+        stats.getDailyRank(dayNumber, score, category)
       ]);
     }).then(function (pair) {
       if (!pair || !pair[0] || !pair[1]) return;
       var tier = tierFromRank(score, pair[0], pair[1]);
       if (!tier) return;
-      if (lastResult && !lastResult.practice && lastResult.dayNumber === dayNumber) {
+      if (lastResult && !lastResult.practice && lastResult.dayNumber === dayNumber && (!category || lastResult.category === category)) {
         lastResult.tierLabel = tier.tierLabel;
       }
+      if (category && window.WickDaily.saveTier) window.WickDaily.saveTier(new Date(), category, tier);
       el.hidden = false;
       el.textContent = tier.text;
+      if (categoryCards) paintCards(window.WickDaily.dayView(new Date()));
     }).catch(function () {});
   }
 
@@ -720,13 +751,34 @@
       box.appendChild(head);
     });
     daily.calendarDates(now).forEach(function (date) {
-      var cell = document.createElement("span");
+      var cell = document.createElement(date < today ? "button" : "span");
       cell.className = "cal-day";
+      if (cell.tagName === "BUTTON") cell.type = "button";
       if (stats.playedMap[date]) cell.classList.add("is-on");
       if (date === today) cell.classList.add("is-today");
       if (date > today) cell.classList.add("is-future");
       cell.textContent = String(Number(date.slice(8)));
-      cell.title = date + (stats.playedMap[date] ? " played" : "");
+      var names = daily.categoriesFor(date).map(function (cat) { return cat.emoji + " " + cat.name; }).join(", ");
+      cell.title = date + (stats.playedMap[date] ? " played" : "") + ". " + names;
+      if (date < today) {
+        cell.addEventListener("click", function () {
+          if (daily.isPro()) {
+            var playable = daily.categoriesFor(date).filter(function (cat) {
+              return daily.canPlay(date, cat.slug, now);
+            });
+            if (!playable.length) return;
+            pendingSlug = playable[0].slug;
+            pendingDate = date;
+            pickCopy.textContent = "Play " + playable[0].name + " from " + daily.shortDate(date) + "?";
+            pickYes.textContent = "Play " + playable[0].name;
+            closeStreakPanel();
+            openPick();
+            return;
+          }
+          closeStreakPanel();
+          openPro(daily.shortDate(date) + " had " + names + ". Playing a past day is part of Wick Pro, coming soon.");
+        });
+      }
       box.appendChild(cell);
     });
   }
@@ -741,7 +793,7 @@
     document.getElementById("streak-now").textContent = streak + (streak === 1 ? " day in a row." : " days in a row.");
     document.getElementById("streak-best").textContent = "Best streak: " + stats.bestStreak + ".";
     var note = document.getElementById("streak-note");
-    note.textContent = daily.nudge(now) || (daily.todayResult(now) ? "Today is done. Come back tomorrow." : "One scored game each day.");
+    note.textContent = daily.nudge(now) || (daily.todayResult(now) ? "Come back tomorrow for new categories." : "One scored category each day.");
     var next = null;
     daily.BADGES.forEach(function (badge) {
       if (!next && streak < badge.at) next = badge;
@@ -842,7 +894,24 @@
     });
   }
 
-  function openRankPanel() {
+  function loadRank(day, slug, yours) {
+    document.getElementById("rank-summary").textContent = "Loading today's scores.";
+    window.WickStats.getDailyDistribution(day, slug).then(function (dist) {
+      if (!dist) {
+        document.getElementById("rank-summary").textContent = "Category rankings are not available yet.";
+        document.getElementById("rank-you").textContent = "";
+        document.getElementById("rank-bars").textContent = "";
+        document.getElementById("rank-stats").textContent = "";
+        return;
+      }
+      var next = yours == null ? Promise.resolve(null) : window.WickStats.getDailyRank(day, yours, slug);
+      return next.then(function (rank) { paintRank(dist, rank, yours); });
+    }).catch(function () {
+      document.getElementById("rank-summary").textContent = "Today's scores could not be loaded.";
+    });
+  }
+
+  function openRankPanel(slug) {
     if (!rankPanel || !window.WickStats) return;
     if (streakPanel) streakPanel.hidden = true;
     rankPanel.hidden = false;
@@ -850,20 +919,31 @@
     document.getElementById("rank-close").focus();
     var now = new Date();
     var daily = window.WickDaily;
-    var day = daily.dayNumber(daily.londonDate(now));
-    var result = daily.todayResult(now);
-    var yours = result ? result.correct : null;
-    document.getElementById("rank-summary").textContent = "Loading today's scores.";
+    var today = daily.londonDate(now);
+    var day = daily.dayNumber(today);
+    var view = daily.dayView(now);
+    if (!slug) slug = (view.categories.filter(function (cat) { return cat.result; })[0] || view.categories[0]).slug;
+    rankSlug = slug;
+    if (rankSwitch) {
+      rankSwitch.textContent = "";
+      view.categories.forEach(function (cat) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = cat.slug === rankSlug ? "is-on" : "";
+        btn.textContent = cat.emoji + " " + cat.name;
+        btn.addEventListener("click", function () { openRankPanel(cat.slug); });
+        rankSwitch.appendChild(btn);
+      });
+    }
+    var yours = null;
+    view.categories.forEach(function (cat) {
+      if (cat.slug === rankSlug && cat.result) yours = cat.result.correct;
+    });
     if (!window.WickStats.configured()) {
       document.getElementById("rank-summary").textContent = "Score comparison is not switched on.";
       return;
     }
-    window.WickStats.getDailyDistribution(day).then(function (dist) {
-      var next = yours == null ? Promise.resolve(null) : window.WickStats.getDailyRank(day, yours);
-      return next.then(function (rank) { paintRank(dist, rank, yours); });
-    }).catch(function () {
-      document.getElementById("rank-summary").textContent = "Today's scores could not be loaded.";
-    });
+    loadRank(day, rankSlug, yours);
   }
 
   function closeRankPanel() {
@@ -891,32 +971,159 @@
     renderPill();
   }
 
+  function fillPractice() {
+    if (!practiceSelect || practiceSelect.options.length) return;
+    var mixed = document.createElement("option");
+    mixed.value = "";
+    mixed.textContent = "Mixed questions";
+    practiceSelect.appendChild(mixed);
+    window.WickDaily.CATEGORIES.forEach(function (cat) {
+      var opt = document.createElement("option");
+      opt.value = cat.slug;
+      opt.textContent = cat.emoji + " " + cat.name;
+      practiceSelect.appendChild(opt);
+    });
+  }
+
+  function tomorrowText(view) {
+    return "Tomorrow: " + view.tomorrow.map(function (cat) {
+      return cat.emoji + " " + cat.name;
+    }).join(" · ");
+  }
+
+  function paintCards(view) {
+    if (!categoryCards || !view) return;
+    categoryCards.textContent = "";
+    view.categories.forEach(function (cat) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "category-card is-" + cat.state;
+      var emoji = document.createElement("span");
+      emoji.className = "category-emoji";
+      emoji.setAttribute("aria-hidden", "true");
+      emoji.textContent = cat.emoji;
+      var copy = document.createElement("span");
+      copy.className = "category-copy";
+      var name = document.createElement("span");
+      name.className = "category-name";
+      name.textContent = cat.name;
+      var teaser = document.createElement("span");
+      teaser.className = "category-teaser";
+      teaser.textContent = cat.teaser;
+      var status = document.createElement("span");
+      status.className = "category-status";
+      if (cat.state === "done" && cat.result) {
+        status.textContent = "✅ " + cat.result.correct + (cat.result.tierLabel ? " · " + cat.result.tierLabel : "");
+      } else if (cat.state === "locked") {
+        status.textContent = "🔒 Pro: play every category";
+      } else {
+        status.textContent = "Play";
+      }
+      copy.appendChild(name);
+      copy.appendChild(teaser);
+      copy.appendChild(status);
+      btn.appendChild(emoji);
+      btn.appendChild(copy);
+      var label = cat.emoji + " " + cat.name + ". " + status.textContent;
+      btn.setAttribute("aria-label", label);
+      btn.addEventListener("click", function () {
+        if (cat.state === "locked") {
+          openPro("Pro: play every category. Coming soon.");
+          return;
+        }
+        if (cat.state === "done") return;
+        pendingSlug = cat.slug;
+        pendingDate = view.today;
+        if (window.WickDaily.isPro()) {
+          pickCopy.textContent = "Play " + cat.name + "?";
+        } else {
+          pickCopy.textContent = "Pick " + cat.name + " for today? You can only choose one!";
+        }
+        pickYes.textContent = "Play " + cat.name;
+        openPick();
+      });
+      categoryCards.appendChild(btn);
+    });
+  }
+
+  function openPick() {
+    if (!pickModal) return;
+    pickModal.hidden = false;
+    document.body.classList.add("modal-open");
+    if (wrap) wrap.inert = true;
+    pickYes.focus();
+  }
+
+  function closePick() {
+    if (!pickModal) return;
+    pickModal.hidden = true;
+    if ((!proModal || proModal.hidden) && confirmEl.hidden && !panelOpen()) {
+      document.body.classList.remove("modal-open");
+      if (wrap) wrap.inert = false;
+    }
+  }
+
+  function openPro(message) {
+    if (!proModal) return;
+    if (proCopy) proCopy.textContent = message || "A one-time payment will unlock every category each day, and past days in the archive. It is not on sale yet.";
+    if (proSoon) proSoon.hidden = true;
+    if (proNotify) proNotify.disabled = false;
+    proModal.hidden = false;
+    document.body.classList.add("modal-open");
+    if (wrap) wrap.inert = true;
+    if (proNotify) proNotify.focus();
+  }
+
+  function closePro() {
+    if (!proModal) return;
+    proModal.hidden = true;
+    if ((!pickModal || pickModal.hidden) && confirmEl.hidden && !panelOpen()) {
+      document.body.classList.remove("modal-open");
+      if (wrap) wrap.inert = false;
+    }
+  }
+
   function paintHome() {
     var now = new Date();
     var daily = window.WickDaily;
     var today = daily.londonDate(now);
     homeDate = today;
-    var label = "Wick #" + daily.dayNumber(today);
-    var result = daily.todayResult(now);
+    var view = daily.dayView(now);
     var streak = daily.currentStreak(now);
-    dayOpen.textContent = label;
-    dayDone.textContent = label;
+    dayOpen.textContent = "Wick · " + view.shortDate;
+    if (dayDone) dayDone.textContent = "Wick · " + view.shortDate;
     openStreak.textContent = String(streak);
-    var badgeDays = window.WickDaily.bestDaily ? window.WickDaily.bestDaily(now) : streak;
+    var badgeDays = daily.bestDaily ? daily.bestDaily(now) : streak;
     renderBadges(document.getElementById("open-badges"), badgeDays);
-    renderBadges(document.getElementById("done-badges"), badgeDays);
-    if (result) {
-      openPanel.hidden = true;
-      donePanel.hidden = false;
-      doneScore.textContent = formatScore(result.score);
-      doneAnswered.textContent = result.answered + " of " + result.roundSize;
-      doneAcc.textContent = result.accuracy;
-      doneRun.textContent = String(result.bestStreak);
-      doneDaily.textContent = String(streak);
-      showComparison(compareDone, result.dayNumber, result.correct, false, false);
+    if (view.legacy && view.legacyResult) {
+      pickPrompt.textContent = "You already played today's Wick.";
+      dayNote.textContent = "You scored " + view.legacyResult.correct + ". Come back tomorrow for new categories.";
+    } else if (view.played) {
+      pickPrompt.textContent = "Come back tomorrow for new categories.";
+      dayNote.textContent = "Today's category is done. The other two are a Wick Pro extra, coming soon.";
+    } else if (view.chosen) {
+      var chosen = daily.categoryBySlug(view.chosen);
+      pickPrompt.textContent = "You picked " + (chosen ? chosen.name : "a category") + ". The others stay locked today.";
+      dayNote.textContent = "That choice is your one scored go.";
     } else {
-      openPanel.hidden = false;
-      donePanel.hidden = true;
+      pickPrompt.textContent = "Pick your category for today. You can only choose one!";
+      dayNote.textContent = "Same three for everyone, until midnight UK time.";
+    }
+    if (homeNudge) homeNudge.textContent = daily.nudge(now);
+    if (tomorrowLine) tomorrowLine.textContent = tomorrowText(view);
+    paintCards(view);
+    if (openPanel) openPanel.hidden = false;
+    if (donePanel) donePanel.hidden = true;
+    var played = null;
+    view.categories.forEach(function (cat) {
+      if (cat.result) played = cat;
+    });
+    if (compareHome) {
+      if (played) showComparison(compareHome, view.dayNumber, played.result.correct, false, false, played.slug);
+      else {
+        compareHome.hidden = true;
+        compareHome.textContent = "";
+      }
     }
     renderBest();
     renderCountdown();
@@ -948,7 +1155,9 @@
         accuracy: accuracy,
         bestStreak: bestStreak,
         results: results.slice(),
-        roundSize: deck.length
+        roundSize: deck.length,
+        category: runSlug,
+        date: runDate || window.WickDaily.londonDate(now)
       }, now);
       dailyStreak = saved.streak;
     }
@@ -963,7 +1172,10 @@
       newBest: better,
       reason: reason,
       practice: practice,
-      dayNumber: window.WickDaily.dayNumber(window.WickDaily.londonDate(now)),
+      dayNumber: window.WickDaily.dayNumber(runDate || window.WickDaily.londonDate(now)),
+      category: runSlug,
+      categoryMeta: runSlug ? window.WickDaily.categoryBySlug(runSlug) : null,
+      shortDate: window.WickDaily.shortDate(runDate || window.WickDaily.londonDate(now)),
       dailyStreak: dailyStreak,
       timeAdded: timeAddedMs
     };
@@ -973,7 +1185,16 @@
     countUp(endScore, score);
     if (endTime) endTime.textContent = (timeAddedMs / 1000).toFixed(1) + "s";
     var shareTitle = document.getElementById("share-card-title");
-    if (shareTitle) shareTitle.textContent = "Wick · " + formatScore(score);
+    if (shareTitle) {
+      shareTitle.textContent = lastResult.categoryMeta
+        ? ("Wick · " + lastResult.shortDate + " · " + lastResult.categoryMeta.emoji + " " + lastResult.categoryMeta.name)
+        : ("Wick · " + formatScore(score));
+    }
+    if (comeBack && !practice) {
+      comeBack.textContent = "Come back tomorrow for new categories. " + tomorrowText(window.WickDaily.dayView(now));
+    } else if (comeBack) {
+      comeBack.textContent = "Practice is not scored.";
+    }
     renderBadges(document.getElementById("end-badges"), window.WickDaily.bestDaily ? window.WickDaily.bestDaily(now) : dailyStreak);
     endAcc.textContent = accuracy;
     endCorrect.textContent = answered + " of " + deck.length;
@@ -981,7 +1202,7 @@
     endDaily.textContent = String(dailyStreak);
     newBestEl.hidden = !better;
     practiceNote.hidden = !practice;
-    showComparison(compareEl, lastResult.dayNumber, correct, practice, !practice);
+    showComparison(compareEl, lastResult.dayNumber, correct, practice, !practice, runSlug);
     renderGrid(results);
     shareStatus.textContent = "";
     shareFallback.hidden = true;
@@ -1015,7 +1236,7 @@
     }
   }
 
-  function startGame(asPractice) {
+  function startGame(asPractice, slug, dateStr) {
     if (mode === "play" || mode === "feedback" || mode === "starting" || mode === "ending") return;
     var source = bank();
     if (!source.length || !window.WickDaily) {
@@ -1025,16 +1246,28 @@
       return;
     }
     var now = new Date();
-    if (!asPractice && window.WickDaily.todayResult(now)) {
-      paintHome();
+    var today = window.WickDaily.londonDate(now);
+    var playDate = dateStr || today;
+    practice = !!asPractice;
+    if (!practice) {
+      if (!slug || !window.WickDaily.canPlay(playDate, slug, now) || !window.WickDaily.commitCategory(playDate, slug, now)) {
+        paintHome();
+        showScreen("start");
+        return;
+      }
+    }
+    mode = "starting";
+    loadError.hidden = true;
+    runSlug = slug || "";
+    runDate = playDate;
+    if (runSlug) deck = window.WickDaily.pickCategoryQuestions(source, playDate, runSlug, 60);
+    else deck = window.WickDaily.pickQuestions(source, today, ROUND_SIZE);
+    if (!deck.length) {
+      mode = "start";
+      loadError.hidden = false;
       showScreen("start");
       return;
     }
-    practice = !!asPractice;
-    mode = "starting";
-    loadError.hidden = true;
-    var today = window.WickDaily.londonDate(now);
-    deck = window.WickDaily.pickQuestions(source, today, ROUND_SIZE);
     index = 0;
     score = 0;
     streak = 0;
@@ -1074,6 +1307,7 @@
     soundOn = false;
   }
   renderSound();
+  fillPractice();
   paintHome();
   showScreen("start");
   clockId = setInterval(function () {
@@ -1093,9 +1327,26 @@
     }
   });
 
-  startBtn.addEventListener("click", function () { startGame(false); });
-  practiceBtn.addEventListener("click", function () { startGame(true); });
-  againBtn.addEventListener("click", function () { startGame(true); });
+  practiceBtn.addEventListener("click", function () {
+    var slug = practiceSelect ? practiceSelect.value : "";
+    startGame(true, slug);
+  });
+  againBtn.addEventListener("click", function () { startGame(true, runSlug, runDate); });
+  pickYes.addEventListener("click", function () {
+    var slug = pendingSlug;
+    var date = pendingDate;
+    closePick();
+    startGame(false, slug, date);
+  });
+  pickNo.addEventListener("click", closePick);
+  proNotify.addEventListener("click", function () {
+    if (proSoon) proSoon.hidden = false;
+    proNotify.disabled = true;
+  });
+  proClose.addEventListener("click", closePro);
+  document.getElementById("archive-btn").addEventListener("click", function () {
+    openPro("Past days stay in the archive. Play the full archive with Wick Pro (coming soon).");
+  });
   nextBtn.addEventListener("click", advance);
   endBtn.addEventListener("click", openConfirm);
   confirmYes.addEventListener("click", function () {
@@ -1105,11 +1356,21 @@
   confirmNo.addEventListener("click", closeConfirm);
   if (pillBtn) pillBtn.addEventListener("click", openStreakPanel);
   document.getElementById("streak-close").addEventListener("click", closeStreakPanel);
-  document.getElementById("open-rank").addEventListener("click", openRankPanel);
+  document.getElementById("open-rank").addEventListener("click", function () { openRankPanel(); });
   document.getElementById("rank-close").addEventListener("click", closeRankPanel);
-  document.getElementById("rank-end").addEventListener("click", openRankPanel);
-  document.getElementById("rank-done").addEventListener("click", openRankPanel);
+  document.getElementById("rank-end").addEventListener("click", function () { openRankPanel(); });
+  document.getElementById("rank-home").addEventListener("click", function () { openRankPanel(); });
   document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && pickModal && !pickModal.hidden) {
+      event.preventDefault();
+      closePick();
+      return;
+    }
+    if (event.key === "Escape" && proModal && !proModal.hidden) {
+      event.preventDefault();
+      closePro();
+      return;
+    }
     if (event.key !== "Escape" || !panelOpen()) return;
     if (rankPanel && !rankPanel.hidden) closeRankPanel();
     else closeStreakPanel();
@@ -1147,6 +1408,7 @@
   document.addEventListener("keydown", function (event) {
     if (event.metaKey || event.ctrlKey || event.altKey) return;
     if (!confirmEl.hidden || panelOpen()) return;
+    if ((pickModal && !pickModal.hidden) || (proModal && !proModal.hidden)) return;
     if (Date.now() < cooldownUntil) return;
     if (mode === "play" && !locked) {
       var map = { "1": 0, "2": 1, "3": 2, "4": 3 };

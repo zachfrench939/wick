@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Wick — a 1-minute quiz</title>
-  <meta name="description" content="Wick is a daily 1-minute quiz. Everyone gets the same 100 questions until midnight UK time. No account, no cookies, no tracking.">
+  <meta name="description" content="Wick is a daily 1-minute quiz. Pick one of three categories. Everyone gets the same choice until midnight UK time. No account, no cookies, no tracking.">
   <meta name="theme-color" content="#2046c7">
   <meta property="og:title" content="Wick — a 1-minute quiz">
-  <meta property="og:description" content="One minute. One hundred questions. A candle burns down while you play. A new Wick starts at midnight, UK time.">
+  <meta property="og:description" content="One minute. Pick one of three categories. A candle burns down while you play. A new Wick starts at midnight, UK time.">
   <meta property="og:url" content="https://wickquiz.com/">
   <meta property="og:image" content="https://wickquiz.com/og.png">
   <meta property="og:image:width" content="1200">
@@ -15,7 +15,7 @@
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Wick — a 1-minute quiz">
-  <meta name="twitter:description" content="One minute. One hundred questions. A candle burns down while you play.">
+  <meta name="twitter:description" content="One minute. Pick one of three categories. A candle burns down while you play.">
   <meta name="twitter:image" content="https://wickquiz.com/og.png">
   <meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://hlnlkcdmtnbzouomcxcg.supabase.co">
   <link rel="canonical" href="https://wickquiz.com/">
@@ -52,38 +52,41 @@
       <section id="screen-start">
         <div id="daily-open">
           <p class="day-label" id="day-open">Wick</p>
-          <p class="lede">One minute. One hundred questions.</p>
-          <p>Everyone gets the same 100 today. A new Wick starts at midnight, UK time. You get one scored go.</p>
+          <p class="lede" id="pick-prompt">Pick your category for today. You can only choose one!</p>
+          <p class="day-note" id="day-note">Same three for everyone, until midnight UK time.</p>
+          <div id="category-cards" class="category-cards"></div>
+          <p class="tomorrow" id="tomorrow-line"></p>
+          <p class="home-nudge" id="home-nudge"></p>
+          <p class="compare" id="compare-home" hidden></p>
           <ul class="rules">
             <li>Four answers. Tap one, or press 1, 2, 3, or 4.</li>
-            <li>A correct answer is 100 points, adds 2 seconds to the clock, and builds a streak up to 250 points.</li>
-            <li>A miss scores nothing and adds no time. It shows the right answer and locks the buttons for 2 seconds. The clock and the candle keep going.</li>
-          <li>The answer streak goes back to zero after a miss. Days played in a row earn badges.</li>
+            <li>A correct answer adds 2 seconds. A miss adds none and pauses the buttons for 2 seconds.</li>
+            <li>One category keeps your streak. Come back tomorrow for new categories.</li>
           </ul>
           <p class="best-label">Daily streak</p>
           <p class="best-num streak-hero" id="open-streak">0</p>
           <ul class="badges" id="open-badges" aria-label="Daily streak badges"></ul>
           <p class="best-label">Best on this device</p>
           <p class="best-num" id="best-score">—</p>
-          <button type="button" class="primary" id="start-btn">Play today's Wick</button>
+          <div class="practice-row">
+            <label class="practice-label" for="practice-category">Practice any category. Not scored.</label>
+            <select id="practice-category"></select>
+            <button type="button" class="secondary" id="practice-btn">Practice for 1 minute</button>
+          </div>
+          <button type="button" class="secondary" id="rank-home">Today's rankings</button>
           <p class="countdown" id="next-open">Next Wick in 00:00:00</p>
+          <p class="archive-line"><button type="button" class="text-btn" id="archive-btn">Past days are in the archive</button></p>
         </div>
         <div id="daily-done" hidden>
           <p class="day-label" id="day-done">Wick</p>
-          <p class="lede">Come back tomorrow.</p>
           <p class="final-score" id="done-score">0</p>
-          <dl class="results">
-            <div><dt>Answered</dt><dd id="done-answered">0 of 100</dd></div>
-            <div><dt>Accuracy</dt><dd id="done-acc">—</dd></div>
-            <div><dt>Best streak</dt><dd id="done-run">0</dd></div>
-            <div><dt>Daily streak</dt><dd id="done-daily">0</dd></div>
-          </dl>
-          <ul class="badges" id="done-badges" aria-label="Daily streak badges"></ul>
-          <p class="compare" id="compare-done">Player comparison coming soon.</p>
-          <p class="countdown" id="next-done">New Wick in 00:00:00</p>
-          <button type="button" class="secondary" id="rank-done">Today's rankings</button>
-          <button type="button" class="secondary" id="practice-btn">Practice (not scored)</button>
-          <p class="note">Practice uses today's questions again. It does not change today's result, your best score, or your daily streak.</p>
+          <p id="done-answered"></p>
+          <p id="done-acc"></p>
+          <p id="done-run"></p>
+          <p id="done-daily"></p>
+          <ul class="badges" id="done-badges" hidden></ul>
+          <p class="compare" id="compare-done" hidden></p>
+          <p class="countdown" id="next-done"></p>
         </div>
         <p id="load-error" class="error" hidden>The questions did not load. Keep questions.js in the same folder as this page.</p>
       </section>
@@ -155,7 +158,7 @@
         <p id="grid" class="grid" aria-hidden="true"></p>
         <p class="compare" id="compare">Player comparison coming soon.</p>
         <div id="rank-chart" class="rank-chart" hidden></div>
-        <p class="come-back">Come back tomorrow. The next set is the same for everyone.</p>
+        <p class="come-back" id="come-back">Come back tomorrow for new categories.</p>
         <p class="countdown" id="next-end">New Wick in 00:00:00</p>
         <div class="end-actions">
           <button type="button" class="primary" id="share-btn">Share result</button>
@@ -165,13 +168,13 @@
             <textarea id="share-text" readonly spellcheck="false" aria-label="Result text to copy"></textarea>
           </div>
           <button type="button" class="secondary" id="rank-end">Today's rankings</button>
-          <button type="button" class="secondary" id="again-btn">Practice this minute again</button>
+          <button type="button" class="secondary" id="again-btn">Practice this category again</button>
         </div>
       </section>
     </main>
     <footer>
       <p class="foot-logo"><img src="brand/logo-mark.svg" alt="" width="42" height="36"><span>Wick</span></p>
-      <p>Your best score, today's result, daily streak, streak badges, sound setting, and a random device ID are stored on this device. That storage is strictly necessary for the game and for score comparison. A scored daily game sends the day, how many you got right, and that ID to Supabase. Practice is not sent. Wick uses no cookies and no tracking.</p>
+      <p>Your best score, today's category and result, daily streak, streak badges, sound setting, and a random device ID are stored on this device. That storage is strictly necessary for the game and for score comparison. A scored daily game sends the day, the category, how many you got right, and that ID to Supabase. Practice is not sent. Wick uses no cookies and no tracking.</p>
       <nav aria-label="Information">
         <a href="about.html">How to play</a>
         <a href="privacy.html">Privacy and cookies</a>
@@ -202,12 +205,34 @@
   <div id="rank-panel" class="modal" hidden>
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="rank-title">
       <h2 id="rank-title">Today's rankings</h2>
+      <div id="rank-switch" class="rank-switch"></div>
       <p id="rank-summary">No names. Just today's scores.</p>
       <div id="rank-bars" class="rank-bars"></div>
       <p id="rank-you"></p>
       <dl class="mini-stats" id="rank-stats"></dl>
       <div class="modal-actions">
         <button type="button" class="secondary" id="rank-close">Close</button>
+      </div>
+    </div>
+  </div>
+  <div id="pick-confirm" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pick-title">
+      <h2 id="pick-title">Pick this category?</h2>
+      <p id="pick-copy">Pick your category for today. You can only choose one!</p>
+      <div class="modal-actions">
+        <button type="button" id="pick-yes">Play this category</button>
+        <button type="button" class="secondary" id="pick-no">Choose a different one</button>
+      </div>
+    </div>
+  </div>
+  <div id="pro-modal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pro-title">
+      <h2 id="pro-title">Wick Pro is coming soon</h2>
+      <p id="pro-copy">A one-time payment will unlock every category each day, and past days in the archive. It is not on sale yet.</p>
+      <p id="pro-soon" hidden>Coming soon. Wick will not ask for your email.</p>
+      <div class="modal-actions">
+        <button type="button" id="pro-notify">Notify me</button>
+        <button type="button" class="secondary" id="pro-close">Close</button>
       </div>
     </div>
   </div>
@@ -225,6 +250,7 @@
   <script src="questions.js"></script>
   <script src="questions-extra.js"></script>
   <script src="questions-more.js"></script>
+  <script src="questions-categories.js"></script>
   <script src="daily.js"></script>
   <script src="config.js"></script>
   <script src="stats.js"></script>

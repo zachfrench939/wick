@@ -1,5 +1,6 @@
-/* Daily Wick. Same 100 questions for everyone on a UK calendar day.
-   Nothing here contacts a server. */
+/* Daily Wick. Each UK day has the same three categories for everyone.
+   A free player picks one. Wick Pro, when window.WICK_IS_PRO is true,
+   unlocks all three and past days. Nothing here contacts a server. */
 (function (root) {
   "use strict";
 
@@ -255,9 +256,18 @@
     }
   }
 
+  function isPro() {
+    return root.WICK_IS_PRO === true;
+  }
+
   function todayResult(now) {
     var data = read();
     var today = londonDate(now || new Date());
+    var runs = dayRuns(data, today);
+    var chosen = dayChosen(data, today);
+    if (chosen && runs[chosen]) return runs[chosen];
+    var slugs = Object.keys(runs);
+    if (slugs.length) return runs[slugs[0]];
     if (!data || !data.result || data.result.date !== today) return null;
     return data.result;
   }
@@ -296,7 +306,7 @@
   function nudge(now) {
     var data = read();
     var today = londonDate(now || new Date());
-    if (data && data.result && data.result.date === today) return "";
+    if (todayResult(now)) return "";
     var streak = currentStreak(now);
     if (!streak) return "";
     var gap = dayGap(data, today);
@@ -364,29 +374,324 @@
     }
     if (streak >= 7) grace = Math.max(grace, 1);
     var played = playedMap(data);
-    played[today] = { score: result.score, correct: result.correct };
-    var best = Math.max(data.bestDaily || 0, streak);
-    var saved = {
-      lastDate: today,
-      streak: streak,
-      bestDaily: best,
-      grace: grace,
-      covered: covered,
-      played: played,
-      result: {
-        date: today,
-        dayNumber: dayNumber(today),
-        score: result.score,
-        answered: result.answered,
-        correct: result.correct,
-        accuracy: result.accuracy,
-        bestStreak: result.bestStreak,
-        results: result.results,
-        roundSize: result.roundSize
+    var date = result.date && result.date <= today ? result.date : today;
+    var forToday = date === today;
+    if (!forToday && !isPro()) return data;
+    if (forToday) {
+      var prev = played[today] || { score: 0, correct: -1 };
+      if (result.correct >= (prev.correct == null ? -1 : prev.correct)) {
+        played[today] = { score: result.score, correct: result.correct, category: result.category || "" };
       }
+    }
+    var best = Math.max(data.bestDaily || 0, forToday ? streak : (data.streak || 0));
+    var run = {
+      date: date,
+      dayNumber: dayNumber(date),
+      category: result.category || "",
+      score: result.score,
+      answered: result.answered,
+      correct: result.correct,
+      accuracy: result.accuracy,
+      bestStreak: result.bestStreak,
+      results: result.results,
+      roundSize: result.roundSize
     };
+    var days = data.days && typeof data.days === "object" ? data.days : {};
+    var bucket = days[date] && typeof days[date] === "object" ? days[date] : {};
+    if (!bucket.runs || typeof bucket.runs !== "object") bucket.runs = {};
+    if (result.category) bucket.runs[result.category] = run;
+    if (!isPro() && forToday) bucket.chosen = bucket.chosen || result.category || "";
+    days[date] = bucket;
+    var saved = {
+      lastDate: forToday ? today : (data.lastDate || ""),
+      streak: forToday ? streak : (data.streak || 0),
+      bestDaily: forToday ? best : Math.max(data.bestDaily || 0, data.streak || 0),
+      grace: forToday ? grace : graceLeft(data),
+      covered: forToday ? covered : !!data.covered,
+      played: played,
+      days: days,
+      result: forToday ? run : (data.result || run)
+    };
+    if (!forToday && data.lastDate) {
+      saved.lastDate = data.lastDate;
+      saved.streak = data.streak || 0;
+      saved.bestDaily = data.bestDaily || 0;
+      saved.grace = graceLeft(data);
+      saved.covered = !!data.covered;
+    }
     write(saved);
     return saved;
+  }
+
+  var CATEGORIES = [
+    { slug: "geography", emoji: "🌍", name: "Geography", teaser: "Capitals, flags, maps and world landmarks" },
+    { slug: "history", emoji: "🏛️", name: "History", teaser: "Empires, battles, monarchs and historic eras" },
+    { slug: "science", emoji: "🧪", name: "Science", teaser: "Physics, chemistry, biology and a little maths" },
+    { slug: "nature", emoji: "🌿", name: "Nature & Animals", teaser: "Wildlife, oceans, botany and ecosystems" },
+    { slug: "space", emoji: "🚀", name: "Space", teaser: "Planets, constellations, moons and cosmic missions" },
+    { slug: "film", emoji: "🎬", name: "Film & TV", teaser: "Classic cinema, blockbusters and iconic television" },
+    { slug: "music", emoji: "🎵", name: "Music", teaser: "Bands, classical, albums, instruments and hits" },
+    { slug: "sport", emoji: "⚽", name: "Sport", teaser: "Football, Olympics, tennis, records and legends" },
+    { slug: "food", emoji: "🍲", name: "Food & Drink", teaser: "World cuisine, ingredients, dishes and culinary facts" },
+    { slug: "language", emoji: "📚", name: "Language & Words", teaser: "Etymology, idioms, alphabets and vocabulary" },
+    { slug: "art", emoji: "🎨", name: "Art & Culture", teaser: "Paintings, literature, mythology and architecture" },
+    { slug: "tech", emoji: "💡", name: "Tech & Inventions", teaser: "Pioneering inventors, computing and engineering" }
+  ];
+
+  var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  function categoryBySlug(slug) {
+    for (var i = 0; i < CATEGORIES.length; i += 1) {
+      if (CATEGORIES[i].slug === slug) return CATEGORIES[i];
+    }
+    return null;
+  }
+
+  function shortDate(dateStr) {
+    var month = MONTHS[Number(dateStr.slice(5, 7)) - 1] || "";
+    return Number(dateStr.slice(8, 10)) + " " + month;
+  }
+
+  function categoriesFor(dateStr) {
+    var start = dayNumber(dateStr) % CATEGORIES.length;
+    var out = [];
+    for (var i = 0; i < 3; i += 1) out.push(CATEGORIES[(start + i) % CATEGORIES.length]);
+    return out;
+  }
+
+  function validQuestion(item) {
+    if (!item || !item.q || !item.answer || !item.choices || item.choices.length !== 4) return false;
+    if (item.choices.indexOf(item.answer) === -1) return false;
+    var seen = {};
+    for (var i = 0; i < item.choices.length; i += 1) {
+      if (!item.choices[i] || seen[item.choices[i]]) return false;
+      seen[item.choices[i]] = true;
+    }
+    return true;
+  }
+
+  function slugOf(item) {
+    if (!item) return "";
+    if (item.slug && categoryBySlug(item.slug)) return item.slug;
+    var q = item.q || "";
+    var kind = mathsKind(q);
+    if (isArithmetic(q) || item.category === "Maths" || (kind && !/prime meridian|prime minister/i.test(q))) return "maths";
+    var name = item.category || "";
+    if (name === "Science" && /planet|astronaut|constellation|Milky Way|solar system|comet|asteroid|black hole|light-year|light year|supernova|galaxy|\bMoon\b|NASA|orbit the Sun|dwarf planet|North Star|Big Dipper|Southern Cross/i.test(q)) {
+      return "space";
+    }
+    if (name === "Geography" && /language|person from/i.test(q)) return "language";
+    if (name === "UK") {
+      if (/battle|war|reigned|invasion|Magna Carta|coronation|Gunpowder|civil war|Act of Union|abdication/i.test(q)) return "history";
+      return "geography";
+    }
+    var mapped = {
+      Geography: "geography",
+      Capitals: "geography",
+      Cities: "geography",
+      Flags: "geography",
+      Landmarks: "geography",
+      Places: "geography",
+      History: "history",
+      Science: "science",
+      Nature: "nature",
+      Space: "space",
+      "Film & TV": "film",
+      Film: "film",
+      Music: "music",
+      Sport: "sport",
+      Food: "food",
+      "Food & Drink": "food",
+      Language: "language",
+      Words: "language",
+      Art: "art",
+      Stories: "art",
+      Inventions: "tech",
+      Tech: "tech"
+    };
+    return mapped[name] || "";
+  }
+
+  var poolCache = { bank: null, extra: -1, map: null };
+
+  function buildPools(bank) {
+    var extra = root.WICK_CATEGORY_EXTRA || [];
+    if (poolCache.map && poolCache.bank === bank && poolCache.extra === extra.length) return poolCache.map;
+    var map = {};
+    var seen = {};
+    function add(item) {
+      if (!validQuestion(item) || isArithmetic(item.q)) return;
+      var slug = slugOf(item);
+      if (!slug) return;
+      var key = slug + "\n" + item.q;
+      if (seen[key]) return;
+      seen[key] = true;
+      if (!map[slug]) map[slug] = [];
+      map[slug].push(item);
+    }
+    (bank || []).forEach(add);
+    extra.forEach(add);
+    poolCache = { bank: bank, extra: extra.length, map: map };
+    return map;
+  }
+
+  function stripe(ordered, dateStr, count) {
+    var slots = Math.floor(ordered.length / count);
+    if (slots < 1) slots = 1;
+    var block = (dayNumber(dateStr) - 1) % slots;
+    var out = [];
+    for (var i = block; i < ordered.length && out.length < count; i += slots) out.push(ordered[i]);
+    return out;
+  }
+
+  function mathsForDay(items, dateStr) {
+    var by = {};
+    var kinds = [];
+    orderedBank(items).forEach(function (item) {
+      var kind = mathsKind(item.q) || "famous";
+      if (!by[kind]) {
+        by[kind] = [];
+        kinds.push(kind);
+      }
+      by[kind].push(item);
+    });
+    var seq = [];
+    var guard = 0;
+    while (guard < 10000) {
+      var added = false;
+      for (var i = 0; i < kinds.length; i += 1) {
+        if (by[kinds[i]].length) {
+          seq.push(by[kinds[i]].shift());
+          added = true;
+        }
+      }
+      if (!added) break;
+      guard += 1;
+    }
+    var pairSlots = Math.max(1, Math.floor(seq.length / 2));
+    var pair = (dayNumber(dateStr) - 1) % pairSlots;
+    var want = dayNumber(dateStr) % 2 === 0 ? 2 : 1;
+    var first = seq[pair * 2];
+    var second = seq[pair * 2 + 1];
+    var out = [];
+    if (first) out.push(first);
+    if (want === 2 && second) {
+      var kindA = mathsKind(first.q) || "famous";
+      var kindB = mathsKind(second.q) || "famous";
+      if (kindA !== kindB) out.push(second);
+    }
+    return out;
+  }
+
+  function pickCategoryQuestions(bank, dateStr, slug, count) {
+    if (!categoryBySlug(slug)) return [];
+    count = count || 60;
+    var map = buildPools(bank);
+    var base = stripe(orderedBank(map[slug] || []), dateStr, count);
+    var extra = slug === "science" ? mathsForDay(map.maths || [], dateStr) : [];
+    return shuffle(base.concat(extra), mulberry32(hash("wick-cat:" + dateStr + ":" + slug)));
+  }
+
+  function poolSize(bank, slug) {
+    var map = buildPools(bank);
+    return (map[slug] || []).length;
+  }
+
+  function dayBucket(data, date) {
+    if (!data || !data.days || typeof data.days !== "object") return null;
+    var bucket = data.days[date];
+    if (!bucket || typeof bucket !== "object") return null;
+    return bucket;
+  }
+
+  function dayRuns(data, date) {
+    var bucket = dayBucket(data, date);
+    if (!bucket || !bucket.runs || typeof bucket.runs !== "object") return {};
+    return bucket.runs;
+  }
+
+  function dayChosen(data, date) {
+    var bucket = dayBucket(data, date);
+    return bucket && bucket.chosen ? bucket.chosen : "";
+  }
+
+  function dayView(now, dateStr) {
+    var today = londonDate(now || new Date());
+    var date = dateStr || today;
+    var data = read() || {};
+    var runs = dayRuns(data, date);
+    var chosen = dayChosen(data, date);
+    var legacy = !Object.keys(runs).length && data.result && data.result.date === date && !data.result.category;
+    var pro = isPro();
+    var cats = categoriesFor(date).map(function (cat) {
+      var result = runs[cat.slug] || null;
+      var state = "open";
+      if (result) state = "done";
+      else if (date > today) state = "locked";
+      else if (!pro && date !== today) state = "locked";
+      else if (!pro && (legacy || (chosen && chosen !== cat.slug))) state = "locked";
+      else if (!pro && chosen === cat.slug) state = "ready";
+      return {
+        slug: cat.slug,
+        emoji: cat.emoji,
+        name: cat.name,
+        teaser: cat.teaser,
+        state: state,
+        result: result
+      };
+    });
+    var played = !!legacy || cats.some(function (cat) { return cat.state === "done"; });
+    return {
+      date: date,
+      today: today,
+      dayNumber: dayNumber(date),
+      shortDate: shortDate(date),
+      pro: pro,
+      legacy: !!legacy,
+      legacyResult: legacy ? data.result : null,
+      chosen: chosen,
+      played: played,
+      categories: cats,
+      tomorrow: categoriesFor(shiftDate(today, 1))
+    };
+  }
+
+  function canPlay(dateStr, slug, now) {
+    var view = dayView(now, dateStr);
+    for (var i = 0; i < view.categories.length; i += 1) {
+      if (view.categories[i].slug === slug) {
+        var state = view.categories[i].state;
+        return state === "open" || state === "ready";
+      }
+    }
+    return false;
+  }
+
+  function commitCategory(dateStr, slug, now) {
+    if (!canPlay(dateStr, slug, now)) return false;
+    if (isPro()) return true;
+    var data = read() || {};
+    if (!data.days || typeof data.days !== "object") data.days = {};
+    var bucket = data.days[dateStr] && typeof data.days[dateStr] === "object" ? data.days[dateStr] : {};
+    if (!bucket.runs || typeof bucket.runs !== "object") bucket.runs = {};
+    bucket.chosen = slug;
+    data.days[dateStr] = bucket;
+    return write(data);
+  }
+
+  function saveTier(now, slug, tier) {
+    var data = read();
+    if (!data || !tier) return false;
+    var today = londonDate(now || new Date());
+    var bucket = dayBucket(data, today);
+    if (!bucket || !bucket.runs || !bucket.runs[slug]) return false;
+    bucket.runs[slug].tierLabel = tier.tierLabel || "";
+    bucket.runs[slug].percentileText = tier.text || "";
+    if (data.result && data.result.date === today && data.result.category === slug) {
+      data.result.tierLabel = tier.tierLabel || "";
+      data.result.percentileText = tier.text || "";
+    }
+    return write(data);
   }
 
   function formatRemaining(ms) {
@@ -416,6 +721,8 @@
   root.WickDaily = {
     EPOCH: EPOCH,
     BADGES: BADGES,
+    CATEGORIES: CATEGORIES,
+    isPro: isPro,
     bestDaily: bestDaily,
     nudge: nudge,
     weekDates: weekDates,
@@ -424,8 +731,17 @@
     londonDate: londonDate,
     dayNumber: dayNumber,
     nextMidnight: nextMidnight,
+    shortDate: shortDate,
+    categoriesFor: categoriesFor,
+    categoryBySlug: categoryBySlug,
     pickQuestions: pickQuestions,
+    pickCategoryQuestions: pickCategoryQuestions,
+    poolSize: poolSize,
     todayResult: todayResult,
+    dayView: dayView,
+    canPlay: canPlay,
+    commitCategory: commitCategory,
+    saveTier: saveTier,
     currentStreak: currentStreak,
     record: record,
     formatRemaining: formatRemaining
