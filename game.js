@@ -2,6 +2,9 @@
   "use strict";
 
   var DURATION_MS = 60 * 1000;
+  var TIME_BONUS_MS = 500;
+  var SHARE_URL = "https://wickquiz.com";
+  var STREAK_MARKS = [3, 5, 10, 15, 20, 25];
   var ROUND_SIZE = 100;
   var ADVANCE_MS = 380;
   var COOLDOWN_MS = 2000;
@@ -20,6 +23,10 @@
   var soundBtn = document.getElementById("sound-toggle");
   var timer = document.getElementById("timer");
   var timerClock = document.getElementById("timer-clock");
+  var timePop = document.getElementById("time-pop");
+  var comboEl = document.getElementById("combo");
+  var sparksEl = document.getElementById("sparks");
+  var endTime = document.getElementById("end-time");
   var candle = document.getElementById("candle");
   var openPanel = document.getElementById("daily-open");
   var donePanel = document.getElementById("daily-done");
@@ -86,6 +93,7 @@
   var soundOn = false;
   var practice = false;
   var blowingOut = false;
+  var timeAddedMs = 0;
   var clockId = 0;
   var cooldownUntil = 0;
   var cooldownId = 0;
@@ -221,10 +229,77 @@
     if (playing) renderCountdown();
   }
 
+  function heatFor(n) {
+    if (n >= 25) return 6;
+    if (n >= 20) return 5;
+    if (n >= 15) return 4;
+    if (n >= 10) return 3;
+    if (n >= 5) return 2;
+    if (n >= 3) return 1;
+    return 0;
+  }
+
   function renderCandle(ms) {
     var pct = Math.max(0, Math.min(100, (ms / DURATION_MS) * 100));
-    candle.style.setProperty("--burn", pct + "%");
-    candle.classList.toggle("is-out", ms <= 0);
+    var value = pct + "%";
+    candle.style.setProperty("--burn", value);
+    document.body.style.setProperty("--burn", value);
+    document.body.style.setProperty("--glow", String(pct / 100));
+    var out = ms <= 0;
+    candle.classList.toggle("is-out", out);
+    document.body.classList.toggle("is-out", out);
+  }
+
+  function showTimePop() {
+    if (!timePop) return;
+    timePop.textContent = "+0.5s";
+    timePop.classList.remove("is-show");
+    void timePop.offsetWidth;
+    timePop.classList.add("is-show");
+  }
+
+  function burst() {
+    if (!sparksEl) return;
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    sparksEl.textContent = "";
+    if (reduce) return;
+    for (var i = 0; i < 8; i += 1) {
+      var bit = document.createElement("i");
+      bit.style.setProperty("--x", ((i % 2 === 0 ? -1 : 1) * (8 + (i * 3))) + "px");
+      bit.style.setProperty("--y", (-10 - (i % 4) * 6) + "px");
+      sparksEl.appendChild(bit);
+    }
+  }
+
+  function renderBadges(el, days) {
+    if (!el || !window.WickDaily || !window.WickDaily.BADGES) return;
+    el.textContent = "";
+    window.WickDaily.BADGES.forEach(function (badge) {
+      var li = document.createElement("li");
+      li.className = days >= badge.at ? "is-on" : "";
+      li.textContent = badge.name;
+      li.title = badge.at + " days in a row";
+      el.appendChild(li);
+    });
+  }
+
+  function countUp(el, target) {
+    if (!el) return;
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce || target < 1) {
+      el.textContent = formatScore(target);
+      return;
+    }
+    var start = 0;
+    if (window.performance && performance.now) start = performance.now();
+    var dur = 700;
+    function frame(now) {
+      var t = Math.min(1, (now - start) / dur);
+      var eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = formatScore(Math.round(target * eased));
+      if (t < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
   }
 
   function renderTimer(ms) {
@@ -339,15 +414,34 @@
       var pts = pointsFor(streak);
       score += pts;
       correct += 1;
-      var label = labelFor(streak);
-      showPop("+" + pts + " " + label, false);
-      say("Correct. " + label + ". Plus " + pts + " points. Streak " + streak + ".");
+      endAt += TIME_BONUS_MS;
+      timeAddedMs += TIME_BONUS_MS;
+      showTimePop();
+      candle.classList.remove("is-gain");
+      void candle.offsetWidth;
+      candle.classList.add("is-gain");
+      var mark = STREAK_MARKS.indexOf(streak) !== -1;
+      var label = mark ? "On fire x" + streak : labelFor(streak);
+      showPop(mark ? label : "+" + pts + " " + label, false);
+      if (comboEl) comboEl.textContent = mark ? label : "";
+      document.body.setAttribute("data-heat", String(heatFor(streak)));
+      candle.setAttribute("data-heat", String(heatFor(streak)));
+      if (mark) {
+        burst();
+        if (soundOn && navigator.vibrate) {
+          try { navigator.vibrate([12, 24, 12]); } catch (err) {}
+        }
+      }
+      say("Correct. " + label + ". Plus " + pts + " points. Half a second added. Streak " + streak + ".");
       blip([
-        { freq: 523, dur: 0.09, gain: 0.05 },
-        { freq: 659, dur: 0.12, gain: 0.05, at: 0.08 }
+        { freq: 523 + heatFor(streak) * 20, dur: 0.09, gain: 0.05 },
+        { freq: 659 + heatFor(streak) * 24, dur: 0.12, gain: 0.05, at: 0.08 }
       ]);
     } else {
       streak = 0;
+      if (comboEl) comboEl.textContent = "";
+      document.body.setAttribute("data-heat", "0");
+      candle.setAttribute("data-heat", "0");
       showPop("NOT QUITE", true);
       say("Not quite. The answer was " + current.answer + ".");
       blip([{ freq: 180, dur: 0.14, gain: 0.045, type: "sine" }]);
@@ -417,6 +511,7 @@
     lines.push(result.answered + " of " + result.roundSize + " · " + result.accuracy);
     lines.push("Best streak " + result.bestStreak);
     if (!result.practice) lines.push("Daily streak " + result.dailyStreak);
+    if (result.timeAdded) lines.push("Time added " + (result.timeAdded / 1000).toFixed(1) + "s");
     lines.push("");
     if (result.results.length) {
       for (var i = 0; i < result.results.length; i += 8) {
@@ -426,7 +521,7 @@
       }
       lines.push("");
     }
-    lines.push(pageUrl());
+    lines.push(SHARE_URL);
     return lines.join("\n");
   }
 
@@ -569,6 +664,9 @@
     dayOpen.textContent = label;
     dayDone.textContent = label;
     openStreak.textContent = String(streak);
+    var badgeDays = window.WickDaily.bestDaily ? window.WickDaily.bestDaily(now) : streak;
+    renderBadges(document.getElementById("open-badges"), badgeDays);
+    renderBadges(document.getElementById("done-badges"), badgeDays);
     if (result) {
       openPanel.hidden = true;
       donePanel.hidden = false;
@@ -628,11 +726,15 @@
       reason: reason,
       practice: practice,
       dayNumber: window.WickDaily.dayNumber(window.WickDaily.londonDate(now)),
-      dailyStreak: dailyStreak
+      dailyStreak: dailyStreak,
+      timeAdded: timeAddedMs
     };
     endReason.textContent = practice ? "Practice" : reasonLabel(reason);
     verdictEl.textContent = practice ? "Not scored. Have another look." : verdictFor(reason);
-    endScore.textContent = formatScore(score);
+    endScore.textContent = "0";
+    countUp(endScore, score);
+    if (endTime) endTime.textContent = (timeAddedMs / 1000).toFixed(1) + "s";
+    renderBadges(document.getElementById("end-badges"), window.WickDaily.bestDaily ? window.WickDaily.bestDaily(now) : dailyStreak);
     endAcc.textContent = accuracy;
     endCorrect.textContent = answered + " of " + deck.length;
     endStreak.textContent = String(bestStreak);
@@ -705,7 +807,12 @@
     ended = false;
     blowingOut = false;
     warnedTen = false;
-    candle.classList.remove("is-out");
+    timeAddedMs = 0;
+    if (comboEl) comboEl.textContent = "";
+    document.body.setAttribute("data-heat", "0");
+    candle.setAttribute("data-heat", "0");
+    candle.classList.remove("is-out", "is-gain");
+    document.body.classList.remove("is-out");
     endAt = Date.now() + DURATION_MS;
     clearInterval(timerId);
     clearTimeout(advanceId);

@@ -6,9 +6,22 @@
   <title>Wick — a 1-minute quiz</title>
   <meta name="description" content="Wick is a daily 1-minute quiz. Everyone gets the same 100 questions until midnight UK time. No account, no cookies, no tracking.">
   <meta name="theme-color" content="#2046c7">
+  <meta property="og:title" content="Wick — a 1-minute quiz">
+  <meta property="og:description" content="One minute. One hundred questions. A candle burns down while you play. A new Wick starts at midnight, UK time.">
+  <meta property="og:url" content="https://wickquiz.com/">
+  <meta property="og:image" content="https://wickquiz.com/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Wick — a 1-minute quiz">
+  <meta name="twitter:description" content="One minute. One hundred questions. A candle burns down while you play.">
+  <meta name="twitter:image" content="https://wickquiz.com/og.png">
   <meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://hlnlkcdmtnbzouomcxcg.supabase.co">
-  <link rel="canonical" href="./">
+  <link rel="canonical" href="https://wickquiz.com/">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="is-start">
@@ -20,6 +33,7 @@
         <div class="tools">
           <p class="timer" id="timer" hidden>
             <span class="visually-hidden">Seconds left </span><span id="timer-clock">60</span>
+            <span id="time-pop" class="time-pop" aria-hidden="true"></span>
           </p>
           <button type="button" id="sound-toggle" aria-pressed="false" aria-label="Sound off">Sound off</button>
         </div>
@@ -33,12 +47,13 @@
           <p>Everyone gets the same 100 today. A new Wick starts at midnight, UK time. You get one scored go.</p>
           <ul class="rules">
             <li>Four answers. Tap one, or press 1, 2, 3, or 4.</li>
-            <li>A correct answer is 100 points. A streak scores more, up to 250.</li>
-            <li>A miss scores nothing, shows the right answer, and locks the buttons for 2 seconds. The clock and the candle keep going.</li>
-          <li>The answer streak goes back to zero after a miss.</li>
+            <li>A correct answer is 100 points, adds half a second to the clock, and builds a streak up to 250 points.</li>
+            <li>A miss scores nothing and adds no time. It shows the right answer and locks the buttons for 2 seconds. The clock and the candle keep going.</li>
+          <li>The answer streak goes back to zero after a miss. Days played in a row earn badges.</li>
           </ul>
           <p class="best-label">Daily streak</p>
-          <p class="best-num" id="open-streak">0</p>
+          <p class="best-num streak-hero" id="open-streak">0</p>
+          <ul class="badges" id="open-badges" aria-label="Daily streak badges"></ul>
           <p class="best-label">Best on this device</p>
           <p class="best-num" id="best-score">—</p>
           <button type="button" class="primary" id="start-btn">Play today's Wick</button>
@@ -54,6 +69,7 @@
             <div><dt>Best streak</dt><dd id="done-run">0</dd></div>
             <div><dt>Daily streak</dt><dd id="done-daily">0</dd></div>
           </dl>
+          <ul class="badges" id="done-badges" aria-label="Daily streak badges"></ul>
           <p class="compare" id="compare-done">Player comparison coming soon.</p>
           <p class="countdown" id="next-done">Next Wick in 00:00:00</p>
           <button type="button" class="secondary" id="practice-btn">Practice (not scored)</button>
@@ -66,6 +82,7 @@
           <div class="play-main">
             <p class="meta"><span id="counter">QUESTION 1</span></p>
             <p class="stats"><span id="score">SCORE 0</span><span id="streak">STREAK 0</span></p>
+            <p id="combo" class="combo" aria-live="polite"></p>
             <h2 id="question" tabindex="-1">
               <span class="cat" id="category">Category</span>
               <span id="question-text"></span>
@@ -85,9 +102,13 @@
             <div class="candle" id="candle">
               <div class="wax-track">
                 <div class="flame" id="candle-flame">
+                  <span class="flame-glow"></span>
+                  <svg class="flame-svg" viewBox="0 0 64 96" aria-hidden="true">
+                    <path class="flame-outer" d="M32 6c8 14 18 24 18 42a18 18 0 1 1-36 0c0-18 10-28 18-42z"/>
+                    <path class="flame-inner" d="M32 34c4 8 8 14 8 22a8 8 0 1 1-16 0c0-8 4-14 8-22z"/>
+                  </svg>
                   <span class="smoke" id="candle-smoke"></span>
-                  <span class="flame-outer"></span>
-                  <span class="flame-inner"></span>
+                  <span class="sparks" id="sparks" aria-hidden="true"></span>
                 </div>
                 <div class="wax" id="candle-wax">
                   <span class="drip drip-a"></span>
@@ -111,7 +132,9 @@
           <div><dt>Answered</dt><dd id="end-correct">0 of 100</dd></div>
           <div><dt>Best streak</dt><dd id="end-streak">0</dd></div>
           <div><dt>Daily streak</dt><dd id="end-daily">0</dd></div>
+          <div><dt>Time added</dt><dd id="end-time">0.0s</dd></div>
         </dl>
+        <ul class="badges" id="end-badges" aria-label="Daily streak badges"></ul>
         <p id="grid" class="grid" aria-hidden="true"></p>
         <p class="compare" id="compare">Player comparison coming soon.</p>
         <p class="countdown" id="next-end">Next Wick in 00:00:00</p>
@@ -127,10 +150,10 @@
       </section>
     </main>
     <footer>
-      <p>Your best score, today's result, daily streak, sound setting, and a random device ID are stored on this device. That storage is strictly necessary for the game and for score comparison. A scored daily game sends the day, how many you got right, and that ID to Supabase. Practice is not sent. Wick uses no cookies and no tracking.</p>
+      <p>Your best score, today's result, daily streak, streak badges, sound setting, and a random device ID are stored on this device. That storage is strictly necessary for the game and for score comparison. A scored daily game sends the day, how many you got right, and that ID to Supabase. Practice is not sent. Wick uses no cookies and no tracking.</p>
       <nav aria-label="Information">
-        <a href="about.html">About and terms</a>
-        <a href="privacy.html">Privacy</a>
+        <a href="about.html">How to play</a>
+        <a href="privacy.html">Privacy and cookies</a>
       </nav>
     </footer>
     <noscript>
@@ -150,6 +173,7 @@
   <div id="live" class="visually-hidden" aria-live="polite"></div>
   <script src="questions.js"></script>
   <script src="questions-extra.js"></script>
+  <script src="questions-more.js"></script>
   <script src="daily.js"></script>
   <script src="config.js"></script>
   <script src="stats.js"></script>
