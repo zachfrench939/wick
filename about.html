@@ -6,24 +6,35 @@
   <title>About Wick and terms</title>
       <meta name="description" content="How Wick works: one daily minute, three categories and one scored choice, a candle timer, and a result you can copy.">
   <meta name="theme-color" content="#2046c7">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://gc.zgo.at; connect-src 'self' https://hlnlkcdmtnbzouomcxcg.supabase.co https://zachfrenchwickquiz.goatcounter.com; base-uri 'self'; object-src 'none'">
   <link rel="icon" href="favicon.ico" sizes="48x48">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="wrap">
+  <div class="wrap" id="wrap">
     <a class="skip" href="#main">Skip to content</a>
     <header class="top">
+      <nav class="site-nav" aria-label="Site">
+        <a href="index.html">Play</a>
+        <a href="about.html" aria-current="page">How to play</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="cookies.html">Cookies</a>
+        <a href="auth.html" data-auth-link>Account</a>
+        <button type="button" data-manage-cookies>Manage cookies</button>
+      </nav>
       <p class="brand"><a class="logo" href="index.html"><img src="brand/logo-icon.svg" alt="" width="36" height="36"><span>Wick</span></a></p>
     </header>
     <main id="main" class="prose" tabindex="-1">
       <h1>About Wick and terms</h1>
-      <p>Wick is a free daily general knowledge quiz. Each UK day, from midnight to midnight in London, everyone sees the same three categories and picks one. You have 1 minute for that category. The other two lock until tomorrow. Practice can be mixed, or any category, and it is not scored.</p>
+      <p>Wick is a free daily general knowledge quiz. Each UK day, from midnight to midnight in London, everyone sees the same three categories and picks one. You have 1 minute for that category. Confirming a category closes the other two until tomorrow. Practice can be mixed, or any category, and it is not scored.</p>
       <p>A candle burns with the 60-second clock. On a phone it sits above the question. On a larger screen it stands beside the questions. Each correct answer adds 2 seconds, and the candle grows back with the clock. The round ends when the flame goes out, you finish the questions, or you tap End game.</p>
-      <p>It works as ordinary files in the browser. It does not need an account or a build step. After a scored daily game, Wick can send the day, how many you got right, and a random device ID to Supabase so it can show how you compare. Practice is not sent. The <a href="privacy.html">privacy and cookie notice</a> explains that storage.</p>
+      <p>It works in the browser. An account is optional and is not required to play. After a scored daily game, Wick can send the day, the category, how many you got right, and a random device id to Supabase so it can show how you compare. Practice is not sent. Signing in does not move that device id or the streak. The <a href="privacy.html">privacy notice</a> and the <a href="cookies.html">cookie and storage notice</a> describe what is stored.</p>
       <h2>How to play</h2>
       <p>Each question has four answers. Tap one, or press 1, 2, 3, or 4. A right answer adds 2 seconds and moves on at once. A wrong answer shows the right one, adds no time, and locks the buttons for 2 seconds, while the clock and the candle keep burning. That pause applies in the daily game and in practice.</p>
+      <p>There are two streaks. The answer streak is correct answers in a row during one round. The daily streak is UK days in a row with one finished scored category. Practice changes neither the daily streak nor the rankings.</p>
       <h2>Scoring</h2>
       <ul>
         <li>First correct answer in a row: 100 points, marked GOT IT.</li>
@@ -42,15 +53,21 @@
       <p>Please keep it kind. The questions are meant to be family-friendly.</p>
       <p>This is a personal project on GitHub Pages. This page is not legal advice.</p>
       <h2>Contact</h2>
-      <p>Contact: via the GitHub repository.</p>
-      <p><a href="privacy.html">Privacy notice</a></p>
+      <p>A name, postal address, and email for the site operator are not published on this page. The site files are published from the GitHub repository zachfrench939/wick. That is the publishing location, not a completed legal identification of a controller.</p>
+      <p><a href="privacy.html">Privacy notice</a> · <a href="cookies.html">Cookies and storage</a></p>
     </main>
     <footer>
       <nav aria-label="Information">
         <a href="index.html">Back to the quiz</a>
         <a href="privacy.html">Privacy</a>
+        <a href="cookies.html">Cookies</a>
+        <button type="button" data-manage-cookies>Manage cookies</button>
       </nav>
     </footer>
   </div>
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <script src="consent.js"></script>
+  <script src="analytics.js"></script>
 </body>
 </html>

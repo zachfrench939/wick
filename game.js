@@ -339,7 +339,7 @@
     }
     counterEl.textContent = prefix + "QUESTION " + index + " OF " + deck.length;
     scoreEl.textContent = "SCORE " + formatScore(score);
-    streakEl.textContent = "STREAK " + streak;
+    streakEl.textContent = "ANSWER STREAK " + streak;
   }
 
   function showPop(text, bad) {
@@ -692,7 +692,7 @@
     var streak = daily.currentStreak(now);
     var stats = daily.deviceStats(now);
     pillCount.textContent = String(streak);
-    pillBtn.setAttribute("aria-label", "Streak " + streak + ". Open streak details.");
+    pillBtn.setAttribute("aria-label", "Daily streak " + streak + " days. Open details.");
     weekDots.textContent = "";
     daily.weekDates(now).forEach(function (date) {
       var dot = document.createElement("i");
@@ -840,7 +840,7 @@
     stats.innerHTML = "";
     var count = Number(dist && dist.count);
     if (!dist || !isFinite(count) || count < 1) {
-      summary.textContent = "No scores yet today.";
+      summary.textContent = "No scored results for this category yet. Practice is not included.";
       you.textContent = "";
       return;
     }
@@ -895,10 +895,14 @@
   }
 
   function loadRank(day, slug, yours) {
+    var retry = document.getElementById("rank-retry");
+    if (retry) retry.hidden = true;
     document.getElementById("rank-summary").textContent = "Loading today's scores.";
     window.WickStats.getDailyDistribution(day, slug).then(function (dist) {
       if (!dist) {
         document.getElementById("rank-summary").textContent = "Category rankings are not available yet.";
+        var retryEarly = document.getElementById("rank-retry");
+        if (retryEarly) retryEarly.hidden = false;
         document.getElementById("rank-you").textContent = "";
         document.getElementById("rank-bars").textContent = "";
         document.getElementById("rank-stats").textContent = "";
@@ -908,6 +912,8 @@
       return next.then(function (rank) { paintRank(dist, rank, yours); });
     }).catch(function () {
       document.getElementById("rank-summary").textContent = "Today's scores could not be loaded.";
+      var retry = document.getElementById("rank-retry");
+      if (retry) retry.hidden = false;
     });
   }
 
@@ -1013,11 +1019,11 @@
       var status = document.createElement("span");
       status.className = "category-status";
       if (cat.state === "done" && cat.result) {
-        status.textContent = "✅ " + cat.result.correct + (cat.result.tierLabel ? " · " + cat.result.tierLabel : "");
+        status.textContent = "Done · " + cat.result.correct + (cat.result.tierLabel ? " · " + cat.result.tierLabel : "");
       } else if (cat.state === "locked") {
-        status.textContent = "🔒 Pro: play every category";
+        status.textContent = view.date === view.today ? "Closed today" : "Not open";
       } else {
-        status.textContent = "Play";
+        status.textContent = "Start";
       }
       copy.appendChild(name);
       copy.appendChild(teaser);
@@ -1028,7 +1034,9 @@
       btn.setAttribute("aria-label", label);
       btn.addEventListener("click", function () {
         if (cat.state === "locked") {
-          openPro("Pro: play every category. Coming soon.");
+          openPro(view.date === view.today
+            ? "You score one category today. The others stay closed until tomorrow. Practice does not use this pick."
+            : "Past days stay closed. Today's three are the free game.");
           return;
         }
         if (cat.state === "done") return;
@@ -1037,7 +1045,7 @@
         if (window.WickDaily.isPro()) {
           pickCopy.textContent = "Play " + cat.name + "?";
         } else {
-          pickCopy.textContent = "Pick " + cat.name + " for today? You can only choose one!";
+          pickCopy.textContent = "Play " + cat.name + " as today's scored category? The other two close after you confirm. Practice will not do this.";
         }
         pickYes.textContent = "Play " + cat.name;
         openPick();
@@ -1065,13 +1073,14 @@
 
   function openPro(message) {
     if (!proModal) return;
-    if (proCopy) proCopy.textContent = message || "A one-time payment will unlock every category each day, and past days in the archive. It is not on sale yet.";
+    if (proCopy) proCopy.textContent = message || "The free game scores one category today. Practice stays open and is not scored.";
     if (proSoon) proSoon.hidden = true;
     if (proNotify) proNotify.disabled = false;
     proModal.hidden = false;
     document.body.classList.add("modal-open");
     if (wrap) wrap.inert = true;
-    if (proNotify) proNotify.focus();
+    if (proClose) proClose.focus();
+    else if (proNotify) proNotify.focus();
   }
 
   function closePro() {
@@ -1100,14 +1109,14 @@
       dayNote.textContent = "You scored " + view.legacyResult.correct + ". Come back tomorrow for new categories.";
     } else if (view.played) {
       pickPrompt.textContent = "Come back tomorrow for new categories.";
-      dayNote.textContent = "Today's category is done. The other two are a Wick Pro extra, coming soon.";
+      dayNote.textContent = "Today's scored category is done. The other two stay closed until tomorrow.";
     } else if (view.chosen) {
       var chosen = daily.categoryBySlug(view.chosen);
       pickPrompt.textContent = "You picked " + (chosen ? chosen.name : "a category") + ". The others stay locked today.";
       dayNote.textContent = "That choice is your one scored go.";
     } else {
-      pickPrompt.textContent = "Pick your category for today. You can only choose one!";
-      dayNote.textContent = "Same three for everyone, until midnight UK time.";
+      pickPrompt.textContent = "Tap a category to start today's scored game.";
+      dayNote.textContent = "You confirm before the other two close. Practice, further down, does not use this pick.";
     }
     if (homeNudge) homeNudge.textContent = daily.nudge(now);
     if (tomorrowLine) tomorrowLine.textContent = tomorrowText(view);
@@ -1127,6 +1136,8 @@
     }
     renderBest();
     renderCountdown();
+    var status = document.getElementById("load-status");
+    if (status) status.hidden = true;
   }
 
   function finish(reason) {
@@ -1307,9 +1318,29 @@
     soundOn = false;
   }
   renderSound();
-  fillPractice();
-  paintHome();
-  showScreen("start");
+  function revealLoadError() {
+    var status = document.getElementById("load-status");
+    if (status) status.hidden = true;
+    if (loadError) loadError.hidden = false;
+  }
+  function markReady() {
+    var status = document.getElementById("load-status");
+    if (status) status.hidden = true;
+  }
+  var retryLoad = document.getElementById("retry-load");
+  if (retryLoad) retryLoad.addEventListener("click", function () { window.location.reload(); });
+  var rankRetry = document.getElementById("rank-retry");
+  if (rankRetry) rankRetry.addEventListener("click", function () { openRankPanel(rankSlug); });
+  if (!window.WickDaily) {
+    revealLoadError();
+    showScreen("start");
+  } else {
+    fillPractice();
+    paintHome();
+    if (!bank().length) revealLoadError();
+    else markReady();
+    showScreen("start");
+  }
   clockId = setInterval(function () {
     if (mode === "play" || mode === "feedback" || mode === "ending") return;
     renderCountdown();
@@ -1345,7 +1376,7 @@
   });
   proClose.addEventListener("click", closePro);
   document.getElementById("archive-btn").addEventListener("click", function () {
-    openPro("Past days stay in the archive. Play the full archive with Wick Pro (coming soon).");
+    openPro("Past days stay closed. Today's three are the free game. Practice can replay a category without a score.");
   });
   nextBtn.addEventListener("click", advance);
   endBtn.addEventListener("click", openConfirm);
