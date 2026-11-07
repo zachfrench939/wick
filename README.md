@@ -1,6 +1,6 @@
 # Wick
 
-Wick is a daily one-minute quiz. Everyone gets the same 100 questions until midnight UK time.
+Wick is a daily one-minute quiz. Everyone gets the same 100 questions until midnight UK time. A correct answer adds 2 seconds to the clock. A wrong answer does not.
 
 Published with GitHub Pages at [wickquiz.com](https://wickquiz.com).
 

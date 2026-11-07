@@ -1,10 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-28 -8 484 430" role="img" aria-label="Wick">
-  <g fill="none" stroke="#ffffff" stroke-width="92" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M42 172 L116 320 L226 96 L336 320 L410 172"/>
-  </g>
-  <g transform="translate(226 148)">
-    <path fill="#ffe08a" d="M0-74c16 24 34 40 34 62a34 34 0 1 1-68 0c0-22 18-38 34-62z"/>
-    <path fill="#ffb703" d="M0-58c12 18 24 32 24 48a24 24 0 1 1-48 0c0-16 12-30 24-48z"/>
-    <path fill="#fff6c2" d="M0-32c6 10 11 16 11 24a11 11 0 1 1-22 0c0-8 5-14 11-24z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="8 48 496 400" role="img" aria-label="Wick">
+  <defs>
+    <linearGradient id="flame" x1="256" y1="62" x2="256" y2="186" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffd66b"/>
+      <stop offset="42%" stop-color="#ffb020"/>
+      <stop offset="100%" stop-color="#ff7a18"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="256" cy="124" r="70" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffd66b" stop-opacity="0.85"/>
+      <stop offset="55%" stop-color="#ffd66b" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#ffd66b" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="256" cy="120" rx="62" ry="70" fill="url(#glow)"/>
+  <path fill="url(#flame)" d="M256 64c24 36 44 62 44 90a44 44 0 1 1-88 0c0-28 20-54 44-90z"/>
+  <path fill="#fff6c8" d="M256 108c11 16 18 28 18 40a18 18 0 1 1-36 0c0-12 7-24 18-40z"/>
+  <g fill="none" stroke="#ffffff" stroke-width="98" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M66 252 L154 390 L256 252 L358 390 L446 252"/>
   </g>
 </svg>

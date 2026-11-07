@@ -2,7 +2,7 @@
   "use strict";
 
   var DURATION_MS = 60 * 1000;
-  var TIME_BONUS_MS = 500;
+  var TIME_BONUS_MS = 2000;
   var SHARE_URL = "https://wickquiz.com";
   var STREAK_MARKS = [3, 5, 10, 15, 20, 25];
   var ROUND_SIZE = 100;
@@ -252,7 +252,7 @@
 
   function showTimePop() {
     if (!timePop) return;
-    timePop.textContent = "+0.5s";
+    timePop.textContent = "+2s";
     timePop.classList.remove("is-show");
     void timePop.offsetWidth;
     timePop.classList.add("is-show");
@@ -432,7 +432,7 @@
           try { navigator.vibrate([12, 24, 12]); } catch (err) {}
         }
       }
-      say("Correct. " + label + ". Plus " + pts + " points. Half a second added. Streak " + streak + ".");
+      say("Correct. " + label + ". Plus " + pts + " points. Two seconds added. Streak " + streak + ".");
       blip([
         { freq: 523 + heatFor(streak) * 20, dur: 0.09, gain: 0.05 },
         { freq: 659 + heatFor(streak) * 24, dur: 0.12, gain: 0.05, at: 0.08 }
