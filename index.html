@@ -35,6 +35,11 @@
           <span>Wick</span>
         </h1>
         <div class="tools">
+          <button type="button" id="streak-pill" class="streak-pill" aria-haspopup="dialog" aria-controls="streak-panel">
+            <span class="streak-flame" aria-hidden="true">🔥</span>
+            <span id="pill-count">0</span>
+            <span class="week-dots" id="week-dots" aria-hidden="true"></span>
+          </button>
           <p class="timer" id="timer" hidden>
             <span class="visually-hidden">Seconds left </span><span id="timer-clock">60</span>
             <span id="time-pop" class="time-pop" aria-hidden="true"></span>
@@ -65,7 +70,7 @@
         </div>
         <div id="daily-done" hidden>
           <p class="day-label" id="day-done">Wick</p>
-          <p class="lede">Today's Wick is done.</p>
+          <p class="lede">Come back tomorrow.</p>
           <p class="final-score" id="done-score">0</p>
           <dl class="results">
             <div><dt>Answered</dt><dd id="done-answered">0 of 100</dd></div>
@@ -75,7 +80,8 @@
           </dl>
           <ul class="badges" id="done-badges" aria-label="Daily streak badges"></ul>
           <p class="compare" id="compare-done">Player comparison coming soon.</p>
-          <p class="countdown" id="next-done">Next Wick in 00:00:00</p>
+          <p class="countdown" id="next-done">New Wick in 00:00:00</p>
+          <button type="button" class="secondary" id="rank-done">Today's rankings</button>
           <button type="button" class="secondary" id="practice-btn">Practice (not scored)</button>
           <p class="note">Practice uses today's questions again. It does not change today's result, your best score, or your daily streak.</p>
         </div>
@@ -148,7 +154,9 @@
         <ul class="badges" id="end-badges" aria-label="Daily streak badges"></ul>
         <p id="grid" class="grid" aria-hidden="true"></p>
         <p class="compare" id="compare">Player comparison coming soon.</p>
-        <p class="countdown" id="next-end">Next Wick in 00:00:00</p>
+        <div id="rank-chart" class="rank-chart" hidden></div>
+        <p class="come-back">Come back tomorrow. The next set is the same for everyone.</p>
+        <p class="countdown" id="next-end">New Wick in 00:00:00</p>
         <div class="end-actions">
           <button type="button" class="primary" id="share-btn">Share result</button>
           <p id="share-status" role="status"></p>
@@ -156,7 +164,8 @@
             <p>Select the result below and copy it.</p>
             <textarea id="share-text" readonly spellcheck="false" aria-label="Result text to copy"></textarea>
           </div>
-          <button type="button" class="secondary" id="again-btn">Practice (not scored)</button>
+          <button type="button" class="secondary" id="rank-end">Today's rankings</button>
+          <button type="button" class="secondary" id="again-btn">Practice this minute again</button>
         </div>
       </section>
     </main>
@@ -171,6 +180,36 @@
     <noscript>
       <p>Wick needs JavaScript to run the quiz. The script is stored with this page and is not loaded from another website.</p>
     </noscript>
+  </div>
+  <div id="streak-panel" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="streak-title">
+      <h2 id="streak-title">Your streak</h2>
+      <p id="streak-now">0 days in a row.</p>
+      <p id="streak-best">Best streak: 0.</p>
+      <p id="streak-note"></p>
+      <div id="streak-calendar" class="calendar" aria-label="Days played"></div>
+      <p id="streak-next"></p>
+      <ul class="badges" id="panel-badges" aria-label="Streak badges"></ul>
+      <h3>On this device</h3>
+      <dl class="mini-stats" id="personal-stats"></dl>
+      <div id="personal-hist" class="hist" aria-hidden="true"></div>
+      <div class="modal-actions">
+        <button type="button" id="open-rank">Today's rankings</button>
+        <button type="button" class="secondary" id="streak-close">Close</button>
+      </div>
+    </div>
+  </div>
+  <div id="rank-panel" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="rank-title">
+      <h2 id="rank-title">Today's rankings</h2>
+      <p id="rank-summary">No names. Just today's scores.</p>
+      <div id="rank-bars" class="rank-bars"></div>
+      <p id="rank-you"></p>
+      <dl class="mini-stats" id="rank-stats"></dl>
+      <div class="modal-actions">
+        <button type="button" class="secondary" id="rank-close">Close</button>
+      </div>
+    </div>
   </div>
   <div id="confirm" class="modal" hidden>
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirm-title">

@@ -638,6 +638,240 @@
   }
 
   var homeDate = "";
+  var streakPanel = document.getElementById("streak-panel");
+  var rankPanel = document.getElementById("rank-panel");
+  var pillBtn = document.getElementById("streak-pill");
+  var pillCount = document.getElementById("pill-count");
+  var weekDots = document.getElementById("week-dots");
+
+  function panelOpen() {
+    return (streakPanel && !streakPanel.hidden) || (rankPanel && !rankPanel.hidden);
+  }
+
+  function setWrapInert(on) {
+    wrap.inert = on;
+    document.body.classList.toggle("modal-open", on);
+  }
+
+  function renderPill() {
+    if (!pillBtn || !window.WickDaily) return;
+    var now = new Date();
+    var daily = window.WickDaily;
+    var today = daily.londonDate(now);
+    var streak = daily.currentStreak(now);
+    var stats = daily.deviceStats(now);
+    pillCount.textContent = String(streak);
+    pillBtn.setAttribute("aria-label", "Streak " + streak + ". Open streak details.");
+    weekDots.textContent = "";
+    daily.weekDates(now).forEach(function (date) {
+      var dot = document.createElement("i");
+      var played = !!stats.playedMap[date];
+      if (date === today && played) dot.className = "is-today is-on";
+      else if (date === today) dot.className = "is-today";
+      else if (date > today) dot.className = "is-future";
+      else if (played) dot.className = "is-on";
+      else dot.className = "is-miss";
+      weekDots.appendChild(dot);
+    });
+  }
+
+  function paintPersonal(now) {
+    var stats = window.WickDaily.deviceStats(now);
+    var list = document.getElementById("personal-stats");
+    var hist = document.getElementById("personal-hist");
+    if (!list || !hist) return;
+    var average = stats.average == null ? "—" : stats.average.toFixed(1);
+    list.innerHTML = "";
+    [
+      ["Played", String(stats.played)],
+      ["Average correct", average],
+      ["Best score", document.getElementById("best-score").textContent],
+      ["Longest streak", String(stats.bestStreak)]
+    ].forEach(function (row) {
+      var wrap = document.createElement("div");
+      var dt = document.createElement("dt");
+      var dd = document.createElement("dd");
+      dt.textContent = row[0];
+      dd.textContent = row[1];
+      wrap.appendChild(dt);
+      wrap.appendChild(dd);
+      list.appendChild(wrap);
+    });
+    hist.textContent = "";
+    var max = stats.buckets.reduce(function (m, n) { return n > m ? n : m; }, 0);
+    stats.buckets.forEach(function (n) {
+      var bar = document.createElement("i");
+      bar.style.height = (max ? Math.max(8, Math.round((n / max) * 100)) : 8) + "%";
+      hist.appendChild(bar);
+    });
+  }
+
+  function paintCalendar(now) {
+    var box = document.getElementById("streak-calendar");
+    if (!box) return;
+    var daily = window.WickDaily;
+    var today = daily.londonDate(now);
+    var stats = daily.deviceStats(now);
+    box.textContent = "";
+    ["M", "T", "W", "T", "F", "S", "S"].forEach(function (label) {
+      var head = document.createElement("span");
+      head.className = "cal-head";
+      head.textContent = label;
+      box.appendChild(head);
+    });
+    daily.calendarDates(now).forEach(function (date) {
+      var cell = document.createElement("span");
+      cell.className = "cal-day";
+      if (stats.playedMap[date]) cell.classList.add("is-on");
+      if (date === today) cell.classList.add("is-today");
+      if (date > today) cell.classList.add("is-future");
+      cell.textContent = String(Number(date.slice(8)));
+      cell.title = date + (stats.playedMap[date] ? " played" : "");
+      box.appendChild(cell);
+    });
+  }
+
+  function openStreakPanel() {
+    if (!streakPanel) return;
+    if (rankPanel) rankPanel.hidden = true;
+    var now = new Date();
+    var daily = window.WickDaily;
+    var streak = daily.currentStreak(now);
+    var stats = daily.deviceStats(now);
+    document.getElementById("streak-now").textContent = streak + (streak === 1 ? " day in a row." : " days in a row.");
+    document.getElementById("streak-best").textContent = "Best streak: " + stats.bestStreak + ".";
+    var note = document.getElementById("streak-note");
+    note.textContent = daily.nudge(now) || (daily.todayResult(now) ? "Today is done. Come back tomorrow." : "One scored game each day.");
+    var next = null;
+    daily.BADGES.forEach(function (badge) {
+      if (!next && streak < badge.at) next = badge;
+    });
+    document.getElementById("streak-next").textContent = next
+      ? "Next badge at " + next.at + " days. " + (next.at - streak) + " to go."
+      : "You have every streak badge.";
+    renderBadges(document.getElementById("panel-badges"), daily.bestDaily(now));
+    paintCalendar(now);
+    paintPersonal(now);
+    streakPanel.hidden = false;
+    setWrapInert(true);
+    document.getElementById("streak-close").focus();
+  }
+
+  function closeStreakPanel() {
+    if (!streakPanel) return;
+    streakPanel.hidden = true;
+    if (!rankPanel || rankPanel.hidden) setWrapInert(false);
+    if (pillBtn) pillBtn.focus();
+  }
+
+  function bandLabel(score) {
+    if (score >= 0.99) return "Top 1%";
+    if (score >= 0.95) return "Top 5%";
+    if (score >= 0.9) return "Top 10%";
+    if (score >= 0.75) return "Top 25%";
+    if (score >= 0.5) return "Top 50%";
+    return "Below the middle";
+  }
+
+  function round1(n) {
+    var v = Number(n);
+    if (!isFinite(v)) return "—";
+    return (Math.round(v * 10) / 10).toString();
+  }
+
+  function paintRank(dist, rank, yours) {
+    var bars = document.getElementById("rank-bars");
+    var you = document.getElementById("rank-you");
+    var summary = document.getElementById("rank-summary");
+    var stats = document.getElementById("rank-stats");
+    bars.textContent = "";
+    stats.innerHTML = "";
+    var count = Number(dist && dist.count);
+    if (!dist || !isFinite(count) || count < 1) {
+      summary.textContent = "No scores yet today.";
+      you.textContent = "";
+      return;
+    }
+    summary.textContent = "No names. These are today's scores only.";
+    var cuts = [0, dist.p50, dist.p75, dist.p90, dist.p95, dist.p99, 100].map(function (n) {
+      var v = Number(n);
+      return isFinite(v) ? v : 0;
+    });
+    var shares = [50, 25, 15, 5, 4, 1];
+    var names = ["Lower half", "50–75", "75–90", "90–95", "95–99", "Top 1%"];
+    var here = -1;
+    if (yours != null) {
+      for (var i = 0; i < 6; i += 1) {
+        if (yours >= cuts[i] && (i === 5 || yours < cuts[i + 1] || cuts[i + 1] === cuts[i])) here = i;
+      }
+      if (here < 0) here = yours >= cuts[5] ? 5 : 0;
+    }
+    shares.forEach(function (share, i) {
+      var col = document.createElement("div");
+      col.className = "rank-col" + (i === here ? " is-you" : "");
+      var bar = document.createElement("i");
+      bar.style.height = Math.max(8, share * 1.6) + "px";
+      var cap = document.createElement("span");
+      cap.textContent = names[i];
+      col.appendChild(bar);
+      col.appendChild(cap);
+      if (i === here) {
+        var mark = document.createElement("em");
+        mark.textContent = "You";
+        col.appendChild(mark);
+      }
+      bars.appendChild(col);
+    });
+    var fraction = rank ? Number(rank.fraction) : NaN;
+    if (yours == null) you.textContent = "Play today's Wick to mark your place.";
+    else if (!isFinite(fraction)) you.textContent = "Your score is in. The rank is still loading.";
+    else you.textContent = "You are here: " + yours + " correct. " + bandLabel(fraction) + ".";
+    [
+      ["Players", String(count)],
+      ["Average", round1(dist.average)],
+      ["99th percentile", round1(dist.p99)]
+    ].forEach(function (row) {
+      var wrap = document.createElement("div");
+      var dt = document.createElement("dt");
+      var dd = document.createElement("dd");
+      dt.textContent = row[0];
+      dd.textContent = row[1];
+      wrap.appendChild(dt);
+      wrap.appendChild(dd);
+      stats.appendChild(wrap);
+    });
+  }
+
+  function openRankPanel() {
+    if (!rankPanel || !window.WickStats) return;
+    if (streakPanel) streakPanel.hidden = true;
+    rankPanel.hidden = false;
+    setWrapInert(true);
+    document.getElementById("rank-close").focus();
+    var now = new Date();
+    var daily = window.WickDaily;
+    var day = daily.dayNumber(daily.londonDate(now));
+    var result = daily.todayResult(now);
+    var yours = result ? result.correct : null;
+    document.getElementById("rank-summary").textContent = "Loading today's scores.";
+    if (!window.WickStats.configured()) {
+      document.getElementById("rank-summary").textContent = "Score comparison is not switched on.";
+      return;
+    }
+    window.WickStats.getDailyDistribution(day).then(function (dist) {
+      var next = yours == null ? Promise.resolve(null) : window.WickStats.getDailyRank(day, yours);
+      return next.then(function (rank) { paintRank(dist, rank, yours); });
+    }).catch(function () {
+      document.getElementById("rank-summary").textContent = "Today's scores could not be loaded.";
+    });
+  }
+
+  function closeRankPanel() {
+    if (!rankPanel) return;
+    rankPanel.hidden = true;
+    setWrapInert(false);
+    if (pillBtn) pillBtn.focus();
+  }
 
   function renderCountdown() {
     var now = new Date();
@@ -647,10 +881,14 @@
       return;
     }
     var left = window.WickDaily.nextMidnight(now) - now.getTime();
-    var text = "Next Wick in " + window.WickDaily.formatRemaining(Math.max(0, left));
-    nextOpen.textContent = text;
-    nextDone.textContent = text;
-    nextEnd.textContent = text;
+    var clock = window.WickDaily.formatRemaining(Math.max(0, left));
+    var fresh = "New Wick in " + clock;
+    var played = !!window.WickDaily.todayResult(now);
+    var hint = window.WickDaily.nudge(now);
+    nextDone.textContent = fresh;
+    nextEnd.textContent = fresh;
+    nextOpen.textContent = played ? fresh : (hint || "A new Wick starts at midnight.");
+    renderPill();
   }
 
   function paintHome() {
@@ -865,6 +1103,17 @@
     finish("end");
   });
   confirmNo.addEventListener("click", closeConfirm);
+  if (pillBtn) pillBtn.addEventListener("click", openStreakPanel);
+  document.getElementById("streak-close").addEventListener("click", closeStreakPanel);
+  document.getElementById("open-rank").addEventListener("click", openRankPanel);
+  document.getElementById("rank-close").addEventListener("click", closeRankPanel);
+  document.getElementById("rank-end").addEventListener("click", openRankPanel);
+  document.getElementById("rank-done").addEventListener("click", openRankPanel);
+  document.addEventListener("keydown", function (event) {
+    if (event.key !== "Escape" || !panelOpen()) return;
+    if (rankPanel && !rankPanel.hidden) closeRankPanel();
+    else closeStreakPanel();
+  });
 
   choicesEl.addEventListener("click", function (event) {
     var btn = event.target.closest("button[data-i]");
@@ -897,7 +1146,7 @@
 
   document.addEventListener("keydown", function (event) {
     if (event.metaKey || event.ctrlKey || event.altKey) return;
-    if (!confirmEl.hidden) return;
+    if (!confirmEl.hidden || panelOpen()) return;
     if (Date.now() < cooldownUntil) return;
     if (mode === "play" && !locked) {
       var map = { "1": 0, "2": 1, "3": 2, "4": 3 };

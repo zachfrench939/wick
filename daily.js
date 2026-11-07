@@ -262,28 +262,117 @@
     return data.result;
   }
 
+  function shiftDate(dateStr, n) {
+    var t = Date.parse(dateStr + "T12:00:00Z") + n * 86400000;
+    return new Date(t).toISOString().slice(0, 10);
+  }
+
+  function playedMap(data) {
+    var played = data && data.played;
+    if (!played || typeof played !== "object") return {};
+    return played;
+  }
+
+  function graceLeft(data) {
+    if (!data || data.grace == null) return 1;
+    return data.grace;
+  }
+
+  function dayGap(data, today) {
+    if (!data || !data.lastDate) return null;
+    return dayNumber(today) - dayNumber(data.lastDate);
+  }
+
   function currentStreak(now) {
     var data = read();
     if (!data || !data.lastDate) return 0;
     var today = londonDate(now || new Date());
-    if (data.lastDate === today) return data.streak || 0;
-    if (dayNumber(today) - dayNumber(data.lastDate) === 1) return data.streak || 0;
+    var gap = dayGap(data, today);
+    if (gap === 0 || gap === 1) return data.streak || 0;
+    if (gap === 2 && graceLeft(data) > 0) return data.streak || 0;
     return 0;
+  }
+
+  function nudge(now) {
+    var data = read();
+    var today = londonDate(now || new Date());
+    if (data && data.result && data.result.date === today) return "";
+    var streak = currentStreak(now);
+    if (!streak) return "";
+    var gap = dayGap(data, today);
+    if (gap === 2 && graceLeft(data) > 0) {
+      return "You missed a day. This one is covered. Play today to keep your " + streak + "-day streak.";
+    }
+    return "Play today to keep your " + streak + "-day streak.";
+  }
+
+  function weekDates(now) {
+    var today = londonDate(now || new Date());
+    var weekday = new Date(Date.parse(today + "T12:00:00Z")).getUTCDay();
+    var sinceMonday = (weekday + 6) % 7;
+    var dates = [];
+    for (var i = 0; i < 7; i += 1) dates.push(shiftDate(today, i - sinceMonday));
+    return dates;
+  }
+
+  function calendarDates(now) {
+    var today = londonDate(now || new Date());
+    var weekday = new Date(Date.parse(today + "T12:00:00Z")).getUTCDay();
+    var sinceMonday = (weekday + 6) % 7;
+    var start = shiftDate(today, -sinceMonday - 28);
+    var dates = [];
+    for (var i = 0; i < 35; i += 1) dates.push(shiftDate(start, i));
+    return dates;
+  }
+
+  function deviceStats(now) {
+    var data = read() || {};
+    var played = playedMap(data);
+    var dates = Object.keys(played);
+    var sum = 0;
+    var buckets = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    dates.forEach(function (date) {
+      var correct = Number(played[date] && played[date].correct);
+      if (!isFinite(correct)) correct = 0;
+      sum += correct;
+      var band = correct >= 100 ? 10 : Math.floor(correct / 10);
+      buckets[band] += 1;
+    });
+    return {
+      played: dates.length,
+      average: dates.length ? sum / dates.length : null,
+      bestStreak: data.bestDaily || 0,
+      buckets: buckets,
+      grace: graceLeft(data),
+      playedMap: played
+    };
   }
 
   function record(result, now) {
     var today = londonDate(now || new Date());
     var data = read() || {};
+    var gap = dayGap(data, today);
     var streak = 1;
+    var grace = graceLeft(data);
+    var covered = false;
     if (data.lastDate === today) streak = data.streak || 1;
-    else if (data.lastDate && dayNumber(today) - dayNumber(data.lastDate) === 1) {
+    else if (gap === 1) streak = (data.streak || 0) + 1;
+    else if (gap === 2 && grace > 0) {
       streak = (data.streak || 0) + 1;
+      grace -= 1;
+      covered = true;
     }
-    var bestDaily = Math.max(data.bestDaily || 0, streak);
+    if (streak >= 7) grace = Math.max(grace, 1);
+    var played = playedMap(data);
+    played[today] = { score: result.score, correct: result.correct };
+    var best = Math.max(data.bestDaily || 0, streak);
     var saved = {
       lastDate: today,
       streak: streak,
-      bestDaily: bestDaily,
+      bestDaily: best,
+      grace: grace,
+      covered: covered,
+      played: played,
       result: {
         date: today,
         dayNumber: dayNumber(today),
@@ -328,6 +417,10 @@
     EPOCH: EPOCH,
     BADGES: BADGES,
     bestDaily: bestDaily,
+    nudge: nudge,
+    weekDates: weekDates,
+    calendarDates: calendarDates,
+    deviceStats: deviceStats,
     londonDate: londonDate,
     dayNumber: dayNumber,
     nextMidnight: nextMidnight,

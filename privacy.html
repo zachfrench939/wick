@@ -34,11 +34,12 @@
       <ul>
         <li>your best score</li>
         <li>today’s scored result, so the daily game can be played once</li>
-        <li>how many days in a row you have played, and the best run of days, which lights the streak badges</li>
+        <li>how many days in a row you have played, the best run of days, and one covered miss so a single forgotten day does not wipe a long streak</li>
+        <li>the dates you have played and the score for each of those days, so the calendar, the week dots, and your own averages can be shown</li>
         <li>whether sound is on or off</li>
         <li>a random device ID, used so today’s scored game is counted once</li>
       </ul>
-      <p>The best score, today’s result, the daily streak, and the sound setting stay on this device. They are strictly necessary for the game. The random device ID also lives in local storage. It is strictly necessary for score comparison, so one device is counted once a day. It is not your name. Clearing this site’s data in your browser removes all of it.</p>
+      <p>The best score, today’s result, the daily streak, the dates you played, and the sound setting stay on this device. They are strictly necessary for the game. The random device ID also lives in local storage. It is strictly necessary for score comparison, so one device is counted once a day. It is not your name. Today’s rankings use only the day, the score, and that ID. They show no usernames. Clearing this site’s data in your browser removes all of it.</p>
       <h2>Score comparison</h2>
       <p>After a scored daily game, Wick sends three things to Supabase, the company that stores the comparison: the day number, how many answers you got right (a number from 0 to 100), and the random device ID. Practice runs are not sent. Supabase is the processor. The project is in the EU, in the London region. The lawful basis is legitimate interests: showing how a result compares with other people who played that day, without identifying anyone. Supabase deletes those rows automatically after 12 months. Wick does not use a third-party script for this. The page calls Supabase itself.</p>
       <h2>Children</h2>
