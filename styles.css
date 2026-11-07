@@ -617,8 +617,9 @@ footer a {
   z-index: 20;
   background: rgba(8, 16, 48, 0.72);
   display: grid;
-  place-items: center;
-  padding: 1rem;
+  place-items: start center;
+  padding: 0.6rem;
+  overflow: auto;
 }
 
 .modal-card {
