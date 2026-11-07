@@ -9,6 +9,7 @@
   var STORAGE_KEY = "wick-auth-session";
   var REDIRECT = "https://wickquiz.com/auth.html";
   var ALLOWED_NEXT = { "/": true, "/index.html": true, "/auth.html": true, "/about.html": true, "/privacy.html": true, "/cookies.html": true };
+  var urlResult = null;
 
   function settings() {
     return {
@@ -237,11 +238,32 @@
     });
   }
 
+  function loadUser(fetcher) {
+    var current = readSession();
+    if (!current) return Promise.resolve(null);
+    if (current.user && current.user.email) return Promise.resolve(current);
+    return request("/user", {
+      method: "GET",
+      fetch: fetcher,
+      token: current.access_token
+    }).then(function (res) {
+      if (!res.ok || !res.data) return current;
+      current.user = publicUser(res.data);
+      return saveSession(current) || current;
+    });
+  }
+
   function currentSession(fetcher) {
     var current = readSession();
     if (!current) return Promise.resolve(null);
-    if (current.expires_at && current.expires_at * 1000 - Date.now() < 60000) return refresh(fetcher);
-    return Promise.resolve(current);
+    var next = current.expires_at && current.expires_at * 1000 - Date.now() < 60000
+      ? refresh(fetcher)
+      : Promise.resolve(current);
+    return next.then(function (session) {
+      if (!session) return null;
+      if (session.user && session.user.email) return session;
+      return loadUser(fetcher);
+    });
   }
 
   function parseHash(hash) {
@@ -292,14 +314,19 @@
     try {
       root.history.replaceState(null, "", loc.pathname || "/auth.html");
     } catch (err) {}
-    if (fromHash && fromHash.error) return Promise.resolve({ ok: false, message: "The email link was rejected." });
+    if (fromHash && fromHash.error) {
+      urlResult = { ok: false, message: "The email link was rejected." };
+      return Promise.resolve(urlResult);
+    }
     if (fromHash && fromHash.access_token) {
       showAuthLanding(fromHash.type === "recovery" ? "recovery" : "signed-in");
       var saved = saveSession(fromHash);
-      return Promise.resolve({ ok: !!saved, session: saved, type: fromHash.type || "" });
+      urlResult = { ok: !!saved, session: saved, type: fromHash.type || "" };
+      return Promise.resolve(urlResult);
     }
     return verifyTokenHash(fromQuery.token_hash, fromQuery.type, fetcher).then(function (result) {
       result.type = fromQuery.type;
+      urlResult = result;
       if (result.ok) showAuthLanding(fromQuery.type === "recovery" ? "recovery" : "signed-in");
       return result;
     });
@@ -343,6 +370,8 @@
     parseHash: parseHash,
     parseAuthQuery: parseAuthQuery,
     consumeUrlAuth: consumeUrlAuth,
+    loadUser: loadUser,
+    urlResult: function () { return urlResult; },
     messageFrom: messageFrom,
     paintLinks: paintLinks
   };

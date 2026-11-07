@@ -35,8 +35,8 @@
 
   function paint() {
     var session = auth.readSession();
-    if (session && session.user && session.user.email) {
-      emailEl.textContent = session.user.email;
+    if (session && session.access_token) {
+      emailEl.textContent = session.user && session.user.email ? session.user.email : "Signed in on this device.";
       show(recovery ? "password" : "in");
       currentField.hidden = !!recovery;
       return;
@@ -160,6 +160,7 @@
   });
 
   if (location.hash === "#set-password") recovery = true;
+  if (auth.urlResult && auth.urlResult() && auth.urlResult().ok === false) say(auth.urlResult().message);
   window.addEventListener("wick-auth", function () {
     if (location.hash === "#set-password") recovery = true;
     paint();

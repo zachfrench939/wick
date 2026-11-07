@@ -215,6 +215,34 @@ test("auth session does not touch the rankings id or user_metadata", async funct
   assert.equal(context.localStorage.getItem("wick-device-id"), "device-keep");
 });
 
+test("confirmation session loads the email from Auth and not from user metadata", async function () {
+  const context = browserContext({
+    WICK_AUTH_NO_BOOT: true,
+    SUPABASE_URL: "https://hlnlkcdmtnbzouomcxcg.supabase.co",
+    SUPABASE_PUBLISHABLE_KEY: "sb_publishable_test"
+  });
+  context.fetch = function (url) {
+    if (String(url).indexOf("/user") !== -1) {
+      return Promise.resolve({
+        ok: true,
+        text: async function () {
+          return JSON.stringify({ id: "user-1", email: "person@example.com", user_metadata: { role: "admin" } });
+        }
+      });
+    }
+    throw new Error("unexpected " + url);
+  };
+  load("auth.js", context);
+  context.WickAuth.saveSession({
+    access_token: "access-1",
+    refresh_token: "refresh-1",
+    expires_in: 3600
+  });
+  const session = await context.WickAuth.currentSession();
+  assert.equal(session.user.email, "person@example.com");
+  assert.equal(session.user.role, undefined);
+});
+
 test("recovery hash is stored without leaving the token in the address", function () {
   const context = browserContext({
     WICK_AUTH_NO_BOOT: true,
