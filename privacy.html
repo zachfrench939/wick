@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wick privacy notice</title>
+  <meta name="description" content="Wick stores a best score, today's result, a daily streak, and a sound setting on this device. Score comparison, when switched on, sends only a score, a day number, and a random device ID.">
+  <meta name="theme-color" content="#2046c7">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="wrap">
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="top">
+      <p class="brand"><a href="index.html">Wick</a></p>
+    </header>
+    <main id="main" class="prose" tabindex="-1">
+      <h1>Privacy notice</h1>
+      <p>Wick is a quiz on this website. Anyone can play it, including children. This notice is in plain English. It is not a legal essay.</p>
+      <h2>What Wick does not do</h2>
+      <ul>
+        <li>It does not use cookies.</li>
+        <li>It does not use analytics, advertising, or other trackers.</li>
+        <li>It does not show ads.</li>
+        <li>It does not load scripts, fonts, or images from other websites.</li>
+        <li>It does not ask for your name, email, age, or any other personal data.</li>
+        <li>It does not use a third-party script.</li>
+      </ul>
+      <h2>What stays on this device</h2>
+      <p>Wick uses the browser’s local storage for these things only:</p>
+      <ul>
+        <li>your best score</li>
+        <li>today’s scored result, so the daily game can be played once</li>
+        <li>how many days in a row you have played</li>
+        <li>whether sound is on or off</li>
+        <li>a random device ID, used so today’s scored game is counted once</li>
+      </ul>
+      <p>The best score, today’s result, the daily streak, and the sound setting stay on this device. They are strictly necessary for the game. The random device ID also lives in local storage. It is strictly necessary for score comparison, so one device is counted once a day. It is not your name. Clearing this site’s data in your browser removes all of it.</p>
+      <h2>Score comparison</h2>
+      <p>After a scored daily game, Wick sends three things to Supabase, the company that stores the comparison: the day number, how many answers you got right (a number from 0 to 100), and the random device ID. Practice runs are not sent. Supabase is the processor. The project is in the EU, in the London region. The lawful basis is legitimate interests: showing how a result compares with other people who played that day, without identifying anyone. Supabase deletes those rows automatically after 12 months. Wick does not use a third-party script for this. The page calls Supabase itself.</p>
+      <h2>Children</h2>
+      <p>The questions are written to be family-friendly. Wick does not collect personal data from children or from anyone else.</p>
+      <h2>Contact</h2>
+      <p>Contact: via the GitHub repository.</p>
+      <p><a href="https://github.com/zachfrench939/zachfrench939.github.io">github.com/zachfrench939/zachfrench939.github.io</a></p>
+      <p><a href="about.html">About and terms</a></p>
+    </main>
+    <footer>
+      <nav aria-label="Information">
+        <a href="index.html">Back to the quiz</a>
+        <a href="about.html">About and terms</a>
+      </nav>
+    </footer>
+  </div>
+</body>
+</html>

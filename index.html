@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wick — a 1-minute quiz</title>
+  <meta name="description" content="Wick is a daily 1-minute quiz. Everyone gets the same 100 questions until midnight UK time. No account, no cookies, no tracking.">
+  <meta name="theme-color" content="#2046c7">
+  <meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://hlnlkcdmtnbzouomcxcg.supabase.co">
+  <link rel="canonical" href="./">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="is-start">
+  <div class="wrap" id="wrap">
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="top">
+      <div class="top-row">
+        <h1>Wick</h1>
+        <div class="tools">
+          <p class="timer" id="timer" hidden>
+            <span class="visually-hidden">Seconds left </span><span id="timer-clock">60</span>
+          </p>
+          <button type="button" id="sound-toggle" aria-pressed="false" aria-label="Sound off">Sound off</button>
+        </div>
+      </div>
+    </header>
+    <main id="main" tabindex="-1">
+      <section id="screen-start">
+        <div id="daily-open">
+          <p class="day-label" id="day-open">Wick</p>
+          <p class="lede">One minute. One hundred questions.</p>
+          <p>Everyone gets the same 100 today. A new Wick starts at midnight, UK time. You get one scored go.</p>
+          <ul class="rules">
+            <li>Four answers. Tap one, or press 1, 2, 3, or 4.</li>
+            <li>A correct answer is 100 points. A streak scores more, up to 250.</li>
+            <li>A miss scores nothing, shows the right answer, and locks the buttons for 2 seconds. The clock and the candle keep going.</li>
+          <li>The answer streak goes back to zero after a miss.</li>
+          </ul>
+          <p class="best-label">Daily streak</p>
+          <p class="best-num" id="open-streak">0</p>
+          <p class="best-label">Best on this device</p>
+          <p class="best-num" id="best-score">—</p>
+          <button type="button" class="primary" id="start-btn">Play today's Wick</button>
+          <p class="countdown" id="next-open">Next Wick in 00:00:00</p>
+        </div>
+        <div id="daily-done" hidden>
+          <p class="day-label" id="day-done">Wick</p>
+          <p class="lede">Today's Wick is done.</p>
+          <p class="final-score" id="done-score">0</p>
+          <dl class="results">
+            <div><dt>Answered</dt><dd id="done-answered">0 of 100</dd></div>
+            <div><dt>Accuracy</dt><dd id="done-acc">—</dd></div>
+            <div><dt>Best streak</dt><dd id="done-run">0</dd></div>
+            <div><dt>Daily streak</dt><dd id="done-daily">0</dd></div>
+          </dl>
+          <p class="compare" id="compare-done">Player comparison coming soon.</p>
+          <p class="countdown" id="next-done">Next Wick in 00:00:00</p>
+          <button type="button" class="secondary" id="practice-btn">Practice (not scored)</button>
+          <p class="note">Practice uses today's questions again. It does not change today's result, your best score, or your daily streak.</p>
+        </div>
+        <p id="load-error" class="error" hidden>The questions did not load. Keep questions.js in the same folder as this page.</p>
+      </section>
+      <section id="screen-play" hidden>
+        <div class="play-layout">
+          <div class="play-main">
+            <p class="meta"><span id="counter">QUESTION 1</span></p>
+            <p class="stats"><span id="score">SCORE 0</span><span id="streak">STREAK 0</span></p>
+            <h2 id="question" tabindex="-1">
+              <span class="cat" id="category">Category</span>
+              <span id="question-text"></span>
+            </h2>
+            <p id="pop" class="pop" aria-hidden="true"></p>
+            <div id="choices" class="choices"></div>
+            <p id="cooldown" class="cooldown" hidden>
+              <span id="cooldown-label">Wait 2</span>
+              <span class="cooldown-track" aria-hidden="true"><span id="cooldown-bar"></span></span>
+            </p>
+            <div class="play-actions">
+              <button type="button" class="primary" id="next-btn" hidden>Next question</button>
+              <button type="button" class="ghost" id="end-btn">End game</button>
+            </div>
+          </div>
+          <div class="candle-panel" id="candle-panel" aria-hidden="true">
+            <div class="candle" id="candle">
+              <div class="wax-track">
+                <div class="flame" id="candle-flame">
+                  <span class="smoke" id="candle-smoke"></span>
+                  <span class="flame-outer"></span>
+                  <span class="flame-inner"></span>
+                </div>
+                <div class="wax" id="candle-wax">
+                  <span class="drip drip-a"></span>
+                  <span class="drip drip-b"></span>
+                  <span class="drip drip-c"></span>
+                </div>
+              </div>
+              <div class="holder"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section id="screen-end" hidden>
+        <p class="eyebrow" id="end-reason">Time's up</p>
+        <h2 id="verdict" tabindex="-1">Nicely done.</h2>
+        <p class="final-score" id="end-score">0</p>
+        <p id="practice-note" class="note" hidden>Practice. This run is not scored.</p>
+        <p id="new-best" class="new-best" hidden>New best on this device.</p>
+        <dl class="results">
+          <div><dt>Accuracy</dt><dd id="end-acc">—</dd></div>
+          <div><dt>Answered</dt><dd id="end-correct">0 of 100</dd></div>
+          <div><dt>Best streak</dt><dd id="end-streak">0</dd></div>
+          <div><dt>Daily streak</dt><dd id="end-daily">0</dd></div>
+        </dl>
+        <p id="grid" class="grid" aria-hidden="true"></p>
+        <p class="compare" id="compare">Player comparison coming soon.</p>
+        <p class="countdown" id="next-end">Next Wick in 00:00:00</p>
+        <div class="end-actions">
+          <button type="button" class="primary" id="share-btn">Share result</button>
+          <p id="share-status" role="status"></p>
+          <div id="share-fallback" hidden>
+            <p>Select the result below and copy it.</p>
+            <textarea id="share-text" readonly spellcheck="false" aria-label="Result text to copy"></textarea>
+          </div>
+          <button type="button" class="secondary" id="again-btn">Practice (not scored)</button>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <p>Your best score, today's result, daily streak, sound setting, and a random device ID are stored on this device. That storage is strictly necessary for the game and for score comparison. A scored daily game sends the day, how many you got right, and that ID to Supabase. Practice is not sent. Wick uses no cookies and no tracking.</p>
+      <nav aria-label="Information">
+        <a href="about.html">About and terms</a>
+        <a href="privacy.html">Privacy</a>
+      </nav>
+    </footer>
+    <noscript>
+      <p>Wick needs JavaScript to run the quiz. The script is stored with this page and is not loaded from another website.</p>
+    </noscript>
+  </div>
+  <div id="confirm" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+      <h2 id="confirm-title">End this game?</h2>
+        <p id="confirm-copy">Ending now keeps this as today's scored Wick.</p>
+      <div class="modal-actions">
+        <button type="button" id="confirm-yes">End now</button>
+        <button type="button" class="secondary" id="confirm-no">Keep playing</button>
+      </div>
+    </div>
+  </div>
+  <div id="live" class="visually-hidden" aria-live="polite"></div>
+  <script src="questions.js"></script>
+  <script src="questions-extra.js"></script>
+  <script src="daily.js"></script>
+  <script src="config.js"></script>
+  <script src="stats.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
