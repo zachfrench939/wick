@@ -734,6 +734,8 @@
     endScore.textContent = "0";
     countUp(endScore, score);
     if (endTime) endTime.textContent = (timeAddedMs / 1000).toFixed(1) + "s";
+    var shareTitle = document.getElementById("share-card-title");
+    if (shareTitle) shareTitle.textContent = "Wick · " + formatScore(score);
     renderBadges(document.getElementById("end-badges"), window.WickDaily.bestDaily ? window.WickDaily.bestDaily(now) : dailyStreak);
     endAcc.textContent = accuracy;
     endCorrect.textContent = answered + " of " + deck.length;

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-28 -8 484 430" role="img" aria-label="Wick">
+  <g fill="none" stroke="#ffffff" stroke-width="92" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M42 172 L116 320 L226 96 L336 320 L410 172"/>
+  </g>
+  <g transform="translate(226 148)">
+    <path fill="#ffe08a" d="M0-74c16 24 34 40 34 62a34 34 0 1 1-68 0c0-22 18-38 34-62z"/>
+    <path fill="#ffb703" d="M0-58c12 18 24 32 24 48a24 24 0 1 1-48 0c0-16 12-30 24-48z"/>
+    <path fill="#fff6c2" d="M0-32c6 10 11 16 11 24a11 11 0 1 1-22 0c0-8 5-14 11-24z"/>
+  </g>
+</svg>

@@ -19,6 +19,7 @@
   <meta name="twitter:image" content="https://wickquiz.com/og.png">
   <meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://hlnlkcdmtnbzouomcxcg.supabase.co">
   <link rel="canonical" href="https://wickquiz.com/">
+  <link rel="icon" href="favicon.ico" sizes="48x48">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.json">
@@ -29,7 +30,10 @@
     <a class="skip" href="#main">Skip to content</a>
     <header class="top">
       <div class="top-row">
-        <h1>Wick</h1>
+        <h1 class="logo">
+          <img src="brand/logo-icon.svg" alt="" width="68" height="68">
+          <span>Wick</span>
+        </h1>
         <div class="tools">
           <p class="timer" id="timer" hidden>
             <span class="visually-hidden">Seconds left </span><span id="timer-clock">60</span>
@@ -122,6 +126,13 @@
         </div>
       </section>
       <section id="screen-end" hidden>
+        <div class="share-card">
+          <img src="brand/logo-icon.svg" alt="" width="44" height="44">
+          <div>
+            <p class="share-card-title" id="share-card-title">Wick</p>
+            <p class="share-card-url">wickquiz.com</p>
+          </div>
+        </div>
         <p class="eyebrow" id="end-reason">Time's up</p>
         <h2 id="verdict" tabindex="-1">Nicely done.</h2>
         <p class="final-score" id="end-score">0</p>
@@ -150,6 +161,7 @@
       </section>
     </main>
     <footer>
+      <p class="foot-logo"><img src="brand/logo-mark.svg" alt="" width="42" height="36"><span>Wick</span></p>
       <p>Your best score, today's result, daily streak, streak badges, sound setting, and a random device ID are stored on this device. That storage is strictly necessary for the game and for score comparison. A scored daily game sends the day, how many you got right, and that ID to Supabase. Practice is not sent. Wick uses no cookies and no tracking.</p>
       <nav aria-label="Information">
         <a href="about.html">How to play</a>

@@ -75,16 +75,74 @@ h1 {
   line-height: 0.95;
 }
 
-body.is-start h1 {
-  font-size: clamp(3.4rem, 18vw, 6.4rem);
-  margin-top: 0.35rem;
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
 }
 
-body.is-play h1,
-body.is-end h1 {
-  font-size: 1.35rem;
-  letter-spacing: 0.16em;
+.logo img {
+  width: 2.15rem;
+  height: 2.15rem;
+  display: block;
+  flex: none;
 }
+
+.logo span {
+  font-size: 1.35rem;
+  letter-spacing: -0.04em;
+}
+
+a.logo { color: inherit; text-decoration: none; }
+
+body.is-start .logo {
+  flex: 1 0 100%;
+  order: 2;
+  margin-top: 0.15rem;
+}
+
+body.is-start .logo img { width: 4.4rem; height: 4.4rem; }
+
+body.is-start .logo span {
+  font-size: clamp(2.7rem, 13vw, 4.8rem);
+}
+
+body.is-play .logo img,
+body.is-end .logo img { width: 2rem; height: 2rem; }
+
+body.is-play .logo span,
+body.is-end .logo span { font-size: 1.2rem; }
+
+.share-card {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0.2rem 0 0.8rem;
+}
+
+.share-card img { width: 2.75rem; height: 2.75rem; display: block; }
+
+.share-card-title,
+.share-card-url { margin: 0; font-weight: 800; }
+
+.share-card-url { color: var(--gold); font-size: 0.95rem; }
+
+.foot-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0 0.45rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.foot-logo img { width: 2.1rem; height: auto; display: block; }
 
 .top-row {
   display: flex;
@@ -847,10 +905,16 @@ footer a {
 
 @media (max-width: 859px) {
   body.is-start .wrap { padding-top: 0.45rem; padding-bottom: 0.6rem; }
-  body.is-start h1 { font-size: 2.6rem; margin-top: 0; }
+  body.is-start .logo { margin-top: 0; }
+  body.is-start .logo img { width: 2.75rem; height: 2.75rem; }
+  body.is-start .logo span { font-size: 2.15rem; }
+  body.is-start .best-num { margin-bottom: 0.2rem; }
   body.is-start .badges { margin-bottom: 0.25rem; }
-  body.is-start .lede { margin-top: 0.35rem; font-size: 1.2rem; }
-  body.is-start .rules { margin: 0.2rem 0 0.5rem; }
+  body.is-play .logo img { width: 1.7rem; height: 1.7rem; }
+  body.is-play .logo span { font-size: 1.05rem; }
+  body.is-start .lede { margin: 0.25rem 0 0.15rem; font-size: 1.15rem; }
+  body.is-start #daily-open > p { margin-top: 0.3rem; margin-bottom: 0.3rem; }
+  body.is-start .rules { margin: 0.15rem 0 0.25rem; }
   body.is-start .rules li { margin: 0.15rem 0; }
   body.is-start .best-num { margin-bottom: 0.45rem; }
   .streak-hero { font-size: 2.1rem; }
