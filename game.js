@@ -108,6 +108,7 @@
   var endAt = 0;
   var timerId = 0;
   var advanceId = 0;
+  var warnedThirty = false;
   var warnedTen = false;
   var soundOn = false;
   var practice = false;
@@ -355,8 +356,15 @@
       var i = Number(btn.getAttribute("data-i"));
       var text = current.choices[i];
       btn.disabled = true;
-      if (text === current.answer) btn.classList.add("is-correct");
-      else if (i === picked) btn.classList.add("is-wrong");
+      if (text === current.answer) {
+        btn.classList.add("is-correct");
+        btn.querySelector(".key").textContent = "✓";
+        btn.setAttribute("aria-label", "Correct. " + text);
+      } else if (i === picked) {
+        btn.classList.add("is-wrong");
+        btn.querySelector(".key").textContent = "✕";
+        btn.setAttribute("aria-label", "Wrong. " + text);
+      }
       else btn.classList.add("is-idle");
     });
   }
@@ -1030,7 +1038,7 @@
       copy.appendChild(status);
       btn.appendChild(emoji);
       btn.appendChild(copy);
-      var label = cat.emoji + " " + cat.name + ". " + status.textContent;
+      var label = cat.emoji + " " + cat.name + ". " + cat.teaser + ". " + status.textContent;
       btn.setAttribute("aria-label", label);
       btn.addEventListener("click", function () {
         if (cat.state === "locked") {
@@ -1099,7 +1107,7 @@
     homeDate = today;
     var view = daily.dayView(now);
     var streak = daily.currentStreak(now);
-    dayOpen.textContent = "Wick · " + view.shortDate;
+    dayOpen.textContent = view.shortDate;
     if (dayDone) dayDone.textContent = "Wick · " + view.shortDate;
     openStreak.textContent = String(streak);
     var badgeDays = daily.bestDaily ? daily.bestDaily(now) : streak;
@@ -1115,8 +1123,8 @@
       pickPrompt.textContent = "You picked " + (chosen ? chosen.name : "a category") + ". The others stay locked today.";
       dayNote.textContent = "That choice is your one scored go.";
     } else {
-      pickPrompt.textContent = "Tap a category to start today's scored game.";
-      dayNote.textContent = "You confirm before the other two close. Practice, further down, does not use this pick.";
+      pickPrompt.textContent = "Tap a card. You confirm before it becomes today's scored game.";
+      dayNote.textContent = "";
     }
     if (homeNudge) homeNudge.textContent = daily.nudge(now);
     if (tomorrowLine) tomorrowLine.textContent = tomorrowText(view);
@@ -1241,6 +1249,10 @@
       return;
     }
     renderTimer(left);
+    if (!warnedThirty && left <= 30000) {
+      warnedThirty = true;
+      say("Thirty seconds left.");
+    }
     if (!warnedTen && left <= 10000) {
       warnedTen = true;
       say("Ten seconds left.");
@@ -1322,6 +1334,7 @@
     locked = false;
     ended = false;
     blowingOut = false;
+    warnedThirty = false;
     warnedTen = false;
     timeAddedMs = 0;
     if (comboEl) comboEl.textContent = "";
@@ -1475,7 +1488,7 @@
     if ((pickModal && !pickModal.hidden) || (proModal && !proModal.hidden)) return;
     if (Date.now() < cooldownUntil) return;
     if (mode === "play" && !locked) {
-      var map = { "1": 0, "2": 1, "3": 2, "4": 3 };
+      var map = { "1": 0, "2": 1, "3": 2, "4": 3, "a": 0, "b": 1, "c": 2, "d": 3, "A": 0, "B": 1, "C": 2, "D": 3 };
       if (Object.prototype.hasOwnProperty.call(map, event.key)) {
         event.preventDefault();
         choose(map[event.key]);

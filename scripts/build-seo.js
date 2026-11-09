@@ -123,10 +123,15 @@ function nav(depth, current) {
     "<nav class=\"site-nav\" aria-label=\"Site\">",
     item("index.html", "Play", "play"),
     item("about/", "How to play", "about"),
+    "<details class=\"nav-more\">",
+    "<summary>Menu</summary>",
+    "<div class=\"nav-menu\">",
     item("faq/", "FAQ", "faq"),
     item("archive/", "Past quizzes", "archive"),
     item("privacy.html", "Privacy", "privacy"),
     item("cookies.html", "Cookies", "cookies"),
+    "</div>",
+    "</details>",
     "</nav>"
   ].join("\n");
 }
@@ -184,8 +189,8 @@ function shell(opts, body) {
     "<div class=\"wrap\">",
     "<a class=\"skip\" href=\"#main\">Skip to content</a>",
     "<header class=\"top\">",
-    nav(opts.depth, opts.nav || ""),
     "<p class=\"brand\"><a class=\"logo\" href=\"" + p + "index.html\"><img src=\"" + p + "brand/logo-icon.svg\" alt=\"\" width=\"36\" height=\"36\"><span>Wick</span></a></p>",
+    nav(opts.depth, opts.nav || ""),
     "</header>",
     "<main id=\"main\" class=\"prose\" tabindex=\"-1\">",
     body,

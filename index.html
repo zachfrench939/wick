@@ -31,16 +31,6 @@
   <div class="wrap" id="wrap">
     <a class="skip" href="#main">Skip to content</a>
     <header class="top">
-      <nav class="site-nav" aria-label="Site">
-        <a href="index.html" aria-current="page">Play</a>
-        <a href="about/">How to play</a>
-        <a href="faq/">FAQ</a>
-        <a href="archive/">Past quizzes</a>
-        <a href="privacy.html">Privacy</a>
-        <a href="cookies.html">Cookies</a>
-        <a href="auth.html" data-auth-link>Account</a>
-        <button type="button" data-manage-cookies>Manage cookies</button>
-      </nav>
       <div class="top-row">
         <h1 class="logo">
           <img src="brand/logo-icon.svg" alt="" width="68" height="68">
@@ -59,23 +49,28 @@
           <button type="button" id="sound-toggle" aria-pressed="false" aria-label="Sound off">Sound off</button>
         </div>
       </div>
+      <nav class="site-nav" aria-label="Site">
+        <a href="index.html" aria-current="page">Play</a>
+        <a href="about/">How to play</a>
+        <details class="nav-more">
+          <summary>Menu</summary>
+          <div class="nav-menu">
+            <a href="faq/">FAQ</a>
+            <a href="archive/">Past quizzes</a>
+            <a href="privacy.html">Privacy</a>
+            <a href="cookies.html">Cookies</a>
+            <a href="auth.html" data-auth-link>Account</a>
+            <button type="button" data-manage-cookies>Manage cookies</button>
+          </div>
+        </details>
+      </nav>
     </header>
     <main id="main" tabindex="-1">
       <section id="screen-start">
         <div id="daily-open">
-          <div class="hero">
-            <p class="eyebrow">A daily candle quiz</p>
-            <p class="value-title">One minute. Three categories. You pick one.</p>
-            <p class="value-copy">Everyone sees the same three until midnight in the UK. A right answer adds 2 seconds. Nothing locks until you confirm.</p>
-          </div>
-          <ol class="how-steps" aria-label="How to play">
-            <li><span>1</span><p><strong>Choose a card.</strong> You confirm before it becomes today's scored game.</p></li>
-            <li><span>2</span><p><strong>Answer as the candle burns.</strong> Tap a choice, or press 1, 2, 3, or 4.</p></li>
-            <li><span>3</span><p><strong>Come back tomorrow.</strong> One finished category keeps the daily streak.</p></li>
-          </ol>
-          <h2 class="choice-heading" id="today-choice">Today's three</h2>
           <p class="day-label" id="day-open">Wick</p>
-          <p class="lede" id="pick-prompt">Tap a category to start today's scored game.</p>
+          <h2 class="choice-heading" id="today-choice">Pick one category</h2>
+          <p class="lede" id="pick-prompt">Tap a card. You confirm before it becomes today's scored game.</p>
           <p class="day-note" id="day-note">Same three for everyone, until midnight UK time.</p>
           <p id="load-status" class="status-line" role="status">Loading today's categories.</p>
           <div id="category-cards" class="category-cards"></div>
@@ -83,34 +78,27 @@
           <p class="tomorrow" id="tomorrow-line"></p>
           <p class="home-nudge" id="home-nudge"></p>
           <p class="compare" id="compare-home" hidden></p>
-          <details class="more-rules">
-            <summary>Scoring and the two streaks</summary>
-            <p>A correct answer adds 2 seconds. A miss adds none and pauses the buttons for 2 seconds. The candle keeps burning.</p>
-            <p><strong>Answer streak</strong> is right answers in a row inside this round. It returns to zero when you miss.</p>
-            <p><strong>Daily streak</strong> is UK days in a row with a finished scored category. Practice does not change it. One missed day can be covered. Two missed days reset it.</p>
-          </details>
-          <div class="home-lower">
-          <section class="panel" aria-labelledby="practice-heading">
-            <h2 id="practice-heading">Practice</h2>
-            <p class="panel-copy">Not scored. Practice does not use today's pick and is not sent to the rankings.</p>
-            <div class="practice-row">
-              <label class="practice-label" for="practice-category">Category</label>
-              <select id="practice-category"></select>
-              <button type="button" class="secondary" id="practice-btn">Practice for 1 minute</button>
+          <details class="more-sheet">
+            <summary>Practice, streak and rules</summary>
+            <div class="sheet-body">
+              <div class="practice-row">
+                <label class="practice-label" for="practice-category">Practice, not scored</label>
+                <select id="practice-category"></select>
+                <button type="button" class="secondary" id="practice-btn">Practice for 1 minute</button>
+              </div>
+              <p class="best-label">Daily streak</p>
+              <p class="best-num streak-hero" id="open-streak">0</p>
+              <ul class="badges" id="open-badges" aria-label="Daily streak badges"></ul>
+              <p class="best-label">Best scored game</p>
+              <p class="best-num" id="best-score">—</p>
+              <p class="sheet-links">
+                <button type="button" class="text-btn" id="rank-home">Today's rankings</button>
+                <button type="button" class="text-btn" id="archive-btn">Past days</button>
+              </p>
+              <p class="countdown" id="next-open">A new Wick starts at midnight.</p>
+              <p>A correct answer adds 2 seconds. A miss adds none and pauses the buttons for 2 seconds. One finished category keeps the daily streak. Practice does not.</p>
             </div>
-          </section>
-          <section class="panel" aria-labelledby="progress-heading">
-            <h2 id="progress-heading">On this device</h2>
-            <p class="best-label">Daily streak</p>
-            <p class="best-num streak-hero" id="open-streak">0</p>
-            <ul class="badges" id="open-badges" aria-label="Daily streak badges"></ul>
-            <p class="best-label">Best scored game</p>
-            <p class="best-num" id="best-score">—</p>
-            <button type="button" class="secondary" id="rank-home">Today's rankings</button>
-            <p class="countdown" id="next-open">A new Wick starts at midnight.</p>
-            <p class="archive-line"><button type="button" class="text-btn" id="archive-btn">Past days stay closed</button></p>
-          </section>
-          </div>
+          </details>
         </div>
         <div id="daily-done" hidden>
           <p class="day-label" id="day-done">Wick</p>
@@ -201,14 +189,16 @@
             <p>Select the result below and copy it.</p>
             <textarea id="share-text" readonly spellcheck="false" aria-label="Result text to copy"></textarea>
           </div>
-          <button type="button" class="secondary" id="rank-end">Today's rankings</button>
-          <button type="button" class="secondary" id="again-btn">Practice this category again</button>
+          <p class="sheet-links">
+            <button type="button" class="text-btn" id="rank-end">Today's rankings</button>
+            <button type="button" class="text-btn" id="again-btn">Practice this category again</button>
+          </p>
         </div>
       </section>
     </main>
     <footer>
       <p class="foot-logo"><img src="brand/logo-mark.svg" alt="" width="42" height="36"><span>Wick</span></p>
-      <p>Progress stays on this device. A scored game can send a result for today's rankings. Optional page counts stay off until you allow them.</p>
+      <p class="foot-note">Scores stay on this device. Rankings send only a result. Page counts stay off until you allow them.</p>
       <nav aria-label="Information">
         <a href="about/">How to play</a>
         <a href="faq/">FAQ</a>
