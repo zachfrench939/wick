@@ -32,7 +32,11 @@
     if (value.indexOf("//") !== -1 || value.indexOf("\\") !== -1 || value.indexOf(":") !== -1) return "";
     if (value.charAt(0) !== "/") return "";
     var path = value.split("?")[0].split("#")[0];
-    return ALLOWED_NEXT[path] ? path : "";
+    if (ALLOWED_NEXT[path]) return path;
+    if (/^\/(about|faq|archive)\/$/.test(path)) return path;
+    if (/^\/archive\/\d{4}-\d{2}-\d{2}\/$/.test(path)) return path;
+    if (/^\/(geography|history|science|nature|space|film|music|sport|food|language|art|tech)-quiz\/$/.test(path)) return path;
+    return "";
   }
 
   function publicUser(user) {

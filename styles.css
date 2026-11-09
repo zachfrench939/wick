@@ -524,6 +524,27 @@ footer a,
   padding: 0.8rem 1rem;
 }
 
+a.primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.sample-q {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 0.9rem 1rem;
+  margin: 0.8rem 0;
+}
+
+.sample-q h3 { margin: 0 0 0.35rem; font-size: 1rem; }
+
+.sample-q ul { margin: 0.4rem 0; }
+
+.quiz-links, footer nav { display: flex; flex-wrap: wrap; gap: 0.35rem 0.8rem; }
+
 .choice {
   width: 100%;
   min-height: 76px;

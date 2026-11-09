@@ -1247,6 +1247,38 @@
     }
   }
 
+  function applyDeepLink() {
+    var params;
+    try {
+      params = new URLSearchParams(window.location.search);
+    } catch (err) {
+      return;
+    }
+    if (params.get("archive") === "1") {
+      openPro("Past days stay in the archive. Play the full archive with Wick Pro (coming soon).");
+      return;
+    }
+    var practiceSlug = params.get("practice") || "";
+    if (practiceSlug && window.WickDaily.categoryBySlug(practiceSlug)) {
+      if (practiceSelect) practiceSelect.value = practiceSlug;
+      if (params.get("start") === "1") startGame(true, practiceSlug);
+      return;
+    }
+    var dailySlug = params.get("daily") || "";
+    if (!dailySlug || !window.WickDaily.categoryBySlug(dailySlug)) return;
+    var now = new Date();
+    var today = window.WickDaily.londonDate(now);
+    if (!window.WickDaily.canPlay(today, dailySlug, now)) return;
+    pendingSlug = dailySlug;
+    pendingDate = today;
+    var meta = window.WickDaily.categoryBySlug(dailySlug);
+    pickCopy.textContent = window.WickDaily.isPro()
+      ? "Play " + meta.name + "?"
+      : "Play " + meta.name + " as today's scored category? The other two close after you confirm.";
+    pickYes.textContent = "Play " + meta.name;
+    openPick();
+  }
+
   function startGame(asPractice, slug, dateStr) {
     if (mode === "play" || mode === "feedback" || mode === "starting" || mode === "ending") return;
     var source = bank();
@@ -1340,6 +1372,7 @@
     if (!bank().length) revealLoadError();
     else markReady();
     showScreen("start");
+    if (bank().length) applyDeepLink();
   }
   clockId = setInterval(function () {
     if (mode === "play" || mode === "feedback" || mode === "ending") return;

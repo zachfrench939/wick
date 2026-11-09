@@ -1,0 +1,31 @@
+name: Daily archive
+
+on:
+  schedule:
+    # 00:20 UTC. In winter that is after midnight in London. In summer it is 01:20 BST, so the London day has already changed.
+    - cron: "20 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/build-seo.js
+      - name: Commit yesterday's archive page
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add archive sitemap.xml robots.txt about faq *-quiz 404.html
+          if git diff --cached --quiet; then
+            echo "No archive changes."
+            exit 0
+          fi
+          git commit -m "Publish the latest ended Wick day in the archive"
+          git push

@@ -34,3 +34,27 @@ These are the habits borrowed from Wordle, Connections, Duolingo and the NYT Gam
 - **Where you sat today.** Today’s rankings use the existing score service: how many people played, the average, the 99th percentile, and bands of the score spread with “You are here.” No names.
 - **Play it again, unscored.** Practice can be mixed or any category. It does not change the daily result, the streak, or the ranking.
 - **A result you can copy.** The emoji grid is the Wordle share, plus the link. Wick does not post it.
+
+## SEO
+
+These pages are static files on GitHub Pages. `node scripts/build-seo.js` writes them, plus `robots.txt` and `sitemap.xml`. It uses the London date. A day is added to the archive only after that day has ended. Each archive page names that day’s three categories and prints four sample questions with answers. It does not print the rest of the round. Today’s questions and future days are not published. Category guides each show four sample questions from the bank and a link that starts a one-minute practice round.
+
+Published paths:
+
+- `/` the game
+- `/about/` how to play
+- `/faq/`
+- `/archive/` and `/archive/YYYY-MM-DD/` for past days
+- `/geography-quiz/`, `/history-quiz/`, `/science-quiz/`, `/nature-quiz/`, `/space-quiz/`, `/film-quiz/`, `/music-quiz/`, `/sport-quiz/`, `/food-quiz/`, `/language-quiz/`, `/art-quiz/`, `/tech-quiz/`
+- `/privacy.html`, `/cookies.html`, `/auth.html`
+- `/404.html`
+
+`.github/workflows/archive.yml` runs the same script each day and commits new archive pages. Page counts are not extended to these paths.
+
+### Manual steps
+
+HTTPS is not enforced on the GitHub Pages site, and this repository’s token cannot change that setting. In the repository’s Pages settings, turn on **Enforce HTTPS**. Until that is on, `http://wickquiz.com/` answers over HTTP. `https://www.wickquiz.com/` already redirects to `https://wickquiz.com/`. `http://www.wickquiz.com/` currently redirects to `http://wickquiz.com/`, so the HTTPS switch is what finishes that chain.
+
+Search Console and Bing should use an HTML file in this repository, not a DNS TXT record. The domain’s DNS is not edited from here, and an HTML file can be committed next to `index.html` as soon as the verification filename is known. After either site accepts the file, submit `https://wickquiz.com/sitemap.xml`.
+
+Useful links, if they are genuine: a short post where you already write, a British quiz or pub community you are part of, and the GitHub repository. Do not buy links. Do not publish the full daily answers on another site. The archive on this site is the teaser.
