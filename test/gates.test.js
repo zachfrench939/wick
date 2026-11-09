@@ -77,32 +77,28 @@ function load(filename, context) {
   return context;
 }
 
-test("analytics stays off without consent, off host, signal, query, or endpoint", function () {
+test("analytics counts wickquiz.com without a consent banner, and stays off other hosts", function () {
   const context = load("analytics.js", browserContext({ WICK_GOATCOUNTER_ENDPOINT: "https://zachfrenchwickquiz.goatcounter.com/count" }));
   const plan = context.WickAnalytics.plan;
   const base = {
     endpoint: "https://zachfrenchwickquiz.goatcounter.com/count",
-    analytics: true,
     hostname: "wickquiz.com",
     pathname: "/",
-    search: "",
+    search: "?ref=1",
     hash: "",
-    doNotTrack: "0",
-    globalPrivacyControl: false,
     title: "Wick"
   };
   assert.equal(plan(base).ok, true);
+  assert.equal(plan(base).path, "/");
   assert.equal(plan(base).script, "https://gc.zgo.at/count.js");
-  assert.equal(plan(Object.assign({}, base, { analytics: false })).reason, "consent");
+  assert.equal(plan(Object.assign({}, base, { pathname: "/geography-quiz/" })).path, "/geography-quiz/");
   assert.equal(plan(Object.assign({}, base, { hostname: "localhost" })).reason, "host");
   assert.equal(plan(Object.assign({}, base, { hostname: "preview.example.com" })).reason, "host");
-  assert.equal(plan(Object.assign({}, base, { doNotTrack: "1" })).reason, "signal");
-  assert.equal(plan(Object.assign({}, base, { globalPrivacyControl: true })).reason, "signal");
-  assert.equal(plan(Object.assign({}, base, { search: "?token=secret" })).reason, "query");
+  assert.equal(plan(Object.assign({}, base, { hash: "#toggle-goatcounter" })).reason, "hash");
   assert.equal(plan(Object.assign({}, base, { endpoint: "" })).reason, "endpoint");
   assert.equal(plan(Object.assign({}, base, { endpoint: "https://example.goatcounter.com/count" })).reason, "endpoint");
   assert.equal(context.WickAnalytics.normalizeEndpoint("https://ACCOUNT.goatcounter.com/count"), "");
-  assert.equal(plan(Object.assign({}, base, { pathname: "/secret-answer" })).reason, "path");
+  assert.equal(plan(Object.assign({}, base, { pathname: "/../secret" })).reason, "path");
 });
 
 test("one count on an allowed production load, and a second start does not add another script", function () {
@@ -262,7 +258,7 @@ test("recovery hash is stored without leaving the token in the address", functio
   });
 });
 
-test("pages do not embed GoatCounter unconditionally and do not advertise a checkout", function () {
+test("pages do not hard-code the GoatCounter script tag and do not advertise a checkout", function () {
   ["index.html", "about.html", "privacy.html", "cookies.html", "auth.html"].forEach(function (name) {
     const html = read(name);
     assert.equal(/<script[^>]+src=["'][^"']*gc\.zgo\.at/.test(html), false, name);

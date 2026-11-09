@@ -254,9 +254,7 @@
   }
 
   function boot() {
-    build();
-    if (read()) hideBanner();
-    else showBanner();
+    /* Page counts do not use a cookie or this banner. */
   }
 
   if (document.readyState === "loading") {

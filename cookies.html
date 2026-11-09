@@ -4,17 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Wick cookies and storage</title>
-  <meta name="description" content="Cookies, local storage, and optional GoatCounter page counts used by Wick.">
+  <meta name="description" content="Wick uses GoatCounter, a cookie-free counter, and stores the quiz on this device.">
   <link rel="canonical" href="https://wickquiz.com/cookies.html">
   <meta property="og:title" content="Wick cookies and storage">
-  <meta property="og:description" content="Cookies, local storage, and optional GoatCounter page counts used by Wick.">
+  <meta property="og:description" content="Wick uses GoatCounter, a cookie-free counter, and stores the quiz on this device.">
   <meta property="og:url" content="https://wickquiz.com/cookies.html">
   <meta property="og:image" content="https://wickquiz.com/og.png">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="en_GB">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Wick cookies and storage">
-  <meta name="twitter:description" content="Cookies, local storage, and optional GoatCounter page counts used by Wick.">
+  <meta name="twitter:description" content="Wick uses GoatCounter, a cookie-free counter, and stores the quiz on this device.">
   <meta name="twitter:image" content="https://wickquiz.com/og.png">
   <meta name="theme-color" content="#2046c7">
   <meta name="referrer" content="no-referrer">
@@ -40,27 +40,25 @@
             <a href="privacy.html">Privacy</a>
             <a href="cookies.html" aria-current="page">Cookies</a>
             <a href="auth.html" data-auth-link>Account</a>
-            <button type="button" data-manage-cookies>Manage cookies</button>
           </div>
         </details>
       </nav>
     </header>
     <main id="main" class="prose" tabindex="-1">
       <h1>Cookies and storage</h1>
-      <p>These pages do not set an HTTP cookie. The choice about optional page counts, the quiz, and an optional sign-in are stored in local storage. PECR covers that kind of storage as well as cookies. Session storage is not used. There is no advertising tag and no embedded video.</p>
-      <p><button type="button" data-manage-cookies>Manage cookies</button></p>
+      <p>We use GoatCounter, a cookie-free, privacy-friendly counter that stores nothing on your device. These pages do not set an HTTP cookie for that count, and they do not show a cookie banner. The quiz and an optional sign-in use local storage. There is no advertising tag and no embedded video.</p>
       <h2>On this device</h2>
       <ul>
         <li><code>wick-best-score</code>. Best scored points. Written when a scored game beats it. Kept until you clear site data. Practice does not write it.</li>
         <li><code>wick-sound</code>. Sound on or off, after you use the sound control. Kept until you clear site data.</li>
         <li><code>wick-daily</code>. Today’s chosen category, scored results, daily streak, one covered miss, and the dates used for the calendar. Kept until you clear site data. This is what lets the free game offer one scored category a day.</li>
         <li><code>wick-device-id</code>. A random id created when a scored result is sent, so the same browser is counted once per category that day. Kept until you clear site data. It is not created by opening the page, it is not used for GoatCounter, and signing in does not replace it.</li>
-        <li><code>wick-consent</code>. Whether optional page counts are allowed, and the time of that choice. Kept for 180 days, then the question is shown again. Rejecting counts does not delete the quiz or an account session.</li>
+        <li><code>wick-consent</code>. An older choice about page counts, if this browser saved one. Page counts no longer read it. Clearing site data removes it.</li>
         <li><code>wick-auth-session</code>. Only after an account session exists. Access token, refresh token, expiry, user id, and email. Removed on this device when you log out. The password is not stored. Anonymous play does not create it.</li>
       </ul>
-      <h2>Optional GoatCounter count</h2>
-      <p>Allowing optional counts can load one script, <code>https://gc.zgo.at/count.js</code>, and send one request to <code>https://zachfrenchwickquiz.goatcounter.com/count</code>. GoatCounter’s documentation says that visitor count does not set a cookie or local storage. Wick also refuses to load the script for the address <code>#toggle-goatcounter</code>, which is the case where that script would write a <code>skipgc</code> local storage flag.</p>
-      <p>The numbers are page loads Wick asks GoatCounter to record. They are not a count of unique people. A signed-in check reported individual pageview rows as off. The separate sessions switch in the dashboard was not confirmed.</p>
+      <h2>GoatCounter</h2>
+      <p>We use GoatCounter, a cookie-free, privacy-friendly counter that stores nothing on your device. On wickquiz.com it loads <code>https://gc.zgo.at/count.js</code> and sends one request to <code>https://zachfrenchwickquiz.goatcounter.com/count</code>. The address <code>#toggle-goatcounter</code> is not counted, because that address would make the script write a <code>skipgc</code> flag on the device.</p>
+      <p>The numbers are page loads. They are not a count of unique people. A signed-in check reported individual pageview rows as off. The separate sessions switch in the dashboard was not confirmed.</p>
       <h2>GoatCounter’s own login</h2>
       <p>The operator dashboard is a different site and asks for a sign-in. GoatCounter’s documentation says that site uses cookies to remember the logged-in operator and to hold short on-screen messages. Those cookies are not set when someone plays Wick. Their exact names were not observed on wickquiz.com, so they are not listed here as if they were.</p>
       <p>The <a href="privacy.html">privacy notice</a> covers rankings, accounts, children, and the facts that are still missing. It does not claim that the site is legally compliant.</p>
@@ -69,7 +67,6 @@
       <nav aria-label="Information">
         <a href="index.html">Back to the quiz</a>
         <a href="privacy.html">Privacy</a>
-        <button type="button" data-manage-cookies>Manage cookies</button>
       </nav>
     </footer>
   </div>

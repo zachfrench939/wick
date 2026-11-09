@@ -197,7 +197,7 @@
   }
 
   function renderSound() {
-    soundBtn.textContent = soundOn ? "Sound on" : "Sound off";
+    soundBtn.textContent = "Sound";
     soundBtn.setAttribute("aria-pressed", soundOn ? "true" : "false");
     soundBtn.setAttribute("aria-label", soundOn ? "Sound on" : "Sound off");
   }
@@ -989,7 +989,7 @@
     if (!practiceSelect || practiceSelect.options.length) return;
     var mixed = document.createElement("option");
     mixed.value = "";
-    mixed.textContent = "Mixed questions";
+    mixed.textContent = "Mixed";
     practiceSelect.appendChild(mixed);
     window.WickDaily.CATEGORIES.forEach(function (cat) {
       var opt = document.createElement("option");
@@ -1029,9 +1029,9 @@
       if (cat.state === "done" && cat.result) {
         status.textContent = "Done · " + cat.result.correct + (cat.result.tierLabel ? " · " + cat.result.tierLabel : "");
       } else if (cat.state === "locked") {
-        status.textContent = view.date === view.today ? "Closed today" : "Not open";
+        status.textContent = view.date === view.today ? "Closed" : "Closed";
       } else {
-        status.textContent = "Start";
+        status.textContent = "Play";
       }
       copy.appendChild(name);
       copy.appendChild(teaser);
@@ -1043,19 +1043,15 @@
       btn.addEventListener("click", function () {
         if (cat.state === "locked") {
           openPro(view.date === view.today
-            ? "You score one category today. The others stay closed until tomorrow. Practice does not use this pick."
-            : "Past days stay closed. Today's three are the free game.");
+            ? "That category is closed today."
+            : "Past days are closed.");
           return;
         }
         if (cat.state === "done") return;
         pendingSlug = cat.slug;
         pendingDate = view.today;
-        if (window.WickDaily.isPro()) {
-          pickCopy.textContent = "Play " + cat.name + "?";
-        } else {
-          pickCopy.textContent = "Play " + cat.name + " as today's scored category? The other two close after you confirm. Practice will not do this.";
-        }
-        pickYes.textContent = "Play " + cat.name;
+        pickCopy.textContent = "Play " + cat.name + "? You only score one today.";
+        pickYes.textContent = "Play";
         openPick();
       });
       categoryCards.appendChild(btn);
@@ -1113,21 +1109,17 @@
     var badgeDays = daily.bestDaily ? daily.bestDaily(now) : streak;
     renderBadges(document.getElementById("open-badges"), badgeDays);
     if (view.legacy && view.legacyResult) {
-      pickPrompt.textContent = "You already played today's Wick.";
-      dayNote.textContent = "You scored " + view.legacyResult.correct + ". Come back tomorrow for new categories.";
+      pickPrompt.textContent = tomorrowText(view);
     } else if (view.played) {
-      pickPrompt.textContent = "Come back tomorrow for new categories.";
-      dayNote.textContent = "Today's scored category is done. The other two stay closed until tomorrow.";
+      pickPrompt.textContent = tomorrowText(view);
     } else if (view.chosen) {
-      var chosen = daily.categoryBySlug(view.chosen);
-      pickPrompt.textContent = "You picked " + (chosen ? chosen.name : "a category") + ". The others stay locked today.";
-      dayNote.textContent = "That choice is your one scored go.";
+      pickPrompt.textContent = "Finish your pick.";
     } else {
-      pickPrompt.textContent = "Tap a card. You confirm before it becomes today's scored game.";
-      dayNote.textContent = "";
+      pickPrompt.textContent = "Pick one.";
     }
-    if (homeNudge) homeNudge.textContent = daily.nudge(now);
-    if (tomorrowLine) tomorrowLine.textContent = tomorrowText(view);
+    if (dayNote) dayNote.textContent = "";
+    if (homeNudge) homeNudge.textContent = "";
+    if (tomorrowLine) tomorrowLine.textContent = "";
     paintCards(view);
     if (openPanel) openPanel.hidden = false;
     if (donePanel) donePanel.hidden = true;
@@ -1284,10 +1276,8 @@
     pendingSlug = dailySlug;
     pendingDate = today;
     var meta = window.WickDaily.categoryBySlug(dailySlug);
-    pickCopy.textContent = window.WickDaily.isPro()
-      ? "Play " + meta.name + "?"
-      : "Play " + meta.name + " as today's scored category? The other two close after you confirm.";
-    pickYes.textContent = "Play " + meta.name;
+    pickCopy.textContent = "Play " + meta.name + "? You only score one today.";
+    pickYes.textContent = "Play";
     openPick();
   }
 

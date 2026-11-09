@@ -40,7 +40,6 @@
             <a href="privacy.html" aria-current="page">Privacy</a>
             <a href="cookies.html">Cookies</a>
             <a href="auth.html" data-auth-link>Account</a>
-            <button type="button" data-manage-cookies>Manage cookies</button>
           </div>
         </details>
       </nav>
@@ -48,7 +47,7 @@
     <main id="main" class="prose" tabindex="-1">
       <h1>Privacy notice</h1>
       <p>This notice describes what the Wick pages in this project actually do. It is not a legal opinion, and it is not a statement that the site meets every UK requirement. Facts the operator still has to supply are listed at the end.</p>
-      <p>Storage and access technologies, including local storage, are covered by PECR as well as by data protection law where personal data is involved. The ICO’s storage and access guidance was finalised on 29 April 2026, after the Data (Use and Access) Act changes. One of the five exceptions can cover some aggregate statistics when the purpose is only to improve the service, people are told, and there is a simple free way to object. Wick does not rely on that exception. Optional page counts stay off until a visitor allows them. That is a choice for this site. It is not a claim that every analytics tool always needs consent.</p>
+      <p>We use GoatCounter, a cookie-free, privacy-friendly counter that stores nothing on your device. It counts page loads on wickquiz.com. It does not ask for a choice and there is no cookie banner. Local storage is still used for the quiz itself, which is described below and on the <a href="cookies.html">cookie and storage notice</a>.</p>
       <h2>Who is responsible</h2>
       <p>The pages do not name a controller, a postal address, or an email address. The public site wickquiz.com is served by GitHub Pages from the repository zachfrench939/wick. An older notice linked zachfrench939.github.io. That repository does not hold the wickquiz.com custom domain. Publishing location is not the same as a completed controller identification.</p>
       <h2>Playing without an account</h2>
@@ -61,9 +60,9 @@
       <p>Email and password sign-up, sign-in, sign-out, and password reset are available and are not required to play. A public Auth settings read on 7 November 2026 showed email sign-in enabled, sign-up enabled, and <code>mailer_autoconfirm</code> false, so a new account needs an email confirmation before a session starts. Phone sign-in was off. This work did not change Auth settings and did not send a confirmation or reset email.</p>
       <p>The password is sent to Supabase Auth and is not written into local storage by these pages. After a session exists, this device stores the access token, refresh token, expiry, user id, and email under <code>wick-auth-session</code>. Logging out removes that record from this device. The quiz keys stay. The pages do not read <code>user_metadata</code> to grant anything. There is no paid entitlement.</p>
       <p>Confirmation and reset links are requested for <code>https://wickquiz.com/auth.html</code> only. Tokens that arrive in the address are removed from the bar after they are read. Whether the project’s Site URL and redirect allow-list match that address was not confirmed. Account deletion and a rights process are not built here. How long Auth keeps an email is not stated in this repository.</p>
-      <h2>Optional page counts</h2>
-      <p>If a visitor allows it, and only on wickquiz.com, the page can load <code>https://gc.zgo.at/count.js</code> and send one page-load count to <code>https://zachfrenchwickquiz.goatcounter.com/count</code>. The count is skipped when Do Not Track or Global Privacy Control is on, when the address has a query string, and on any other host, so local and preview visits are not sent. The payload is limited to a short allow-listed path, an empty referrer field, and a request to count the load rather than stitch a visit. Screen width and the query string are stripped before send. The page does not send the device id, email, answers, or password.</p>
-      <p>GoatCounter’s own documentation (privacy page dated 8 June 2025) says visitor counting does not use a cookie or local storage, that an in-memory combination of site, IP address, and user agent can last up to 8 hours for its default visit deduplication, that the operator is Martin Tournoij in Ireland, and that hosting is at Hetzner in Finland and Germany. Those are their statements. A cookieless counter is not automatically outside PECR.</p>
+      <h2>Page counts</h2>
+      <p>We use GoatCounter, a cookie-free, privacy-friendly counter that stores nothing on your device. On wickquiz.com the page loads <code>https://gc.zgo.at/count.js</code> and sends one page-load count to <code>https://zachfrenchwickquiz.goatcounter.com/count</code>. The count is the path and the page title. The query string, the referrer, and the screen width are not sent. The page does not send the device id, email, answers, or password. Other hosts, including a preview or your own computer, are not counted.</p>
+      <p>GoatCounter’s own documentation (privacy page dated 8 June 2025) says visitor counting does not use a cookie or local storage, that an in-memory combination of site, IP address, and user agent can last up to 8 hours for its default visit deduplication, that the operator is Martin Tournoij in Ireland, and that hosting is at Hetzner in Finland and Germany. Those are their statements.</p>
       <p>A coordinator, while signed in, reported that the dashboard is login-only, the timezone is Europe/London, the connected domain is wickquiz.com, and individual pageview collection is off. Those settings were not changed. GoatCounter account email verification was still pending. Browser, system, location, and language collection switches, and the dashboard sessions switch, were not part of that check. The dashboard is not embedded on Wick and no GoatCounter API key is in these files. Login cookies for the GoatCounter site, described in their documentation as remembering a signed-in operator and short messages, are not set by the public Wick pages.</p>
       <h2>What still has to be decided</h2>
       <ul>
@@ -81,7 +80,6 @@
       <nav aria-label="Information">
         <a href="index.html">Back to the quiz</a>
         <a href="cookies.html">Cookies and storage</a>
-        <button type="button" data-manage-cookies>Manage cookies</button>
       </nav>
     </footer>
   </div>

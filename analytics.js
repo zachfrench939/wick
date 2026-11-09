@@ -1,18 +1,11 @@
-/* Optional GoatCounter page counts.
-   The count script is added only when every gate below passes.
-   There is no noscript pixel and no second embed in the HTML. */
+/* GoatCounter page counts for wickquiz.com.
+   The counter sets no cookie and no local storage. It is not gated on a banner.
+   The script is added from here, not as a tag in the HTML, and only on this host. */
 (function (root) {
   "use strict";
 
   var SCRIPT_SRC = "https://gc.zgo.at/count.js";
   var SCRIPT_ID = "wick-goatcounter";
-  var ALLOWED_PATHS = {
-    "/": true,
-    "/index.html": true,
-    "/about.html": true,
-    "/privacy.html": true,
-    "/cookies.html": true
-  };
   var generation = 0;
   var started = false;
 
@@ -30,25 +23,18 @@
     if (typeof pathname !== "string") return "";
     if (pathname.indexOf("?") !== -1 || pathname.indexOf("#") !== -1) return "";
     if (pathname.indexOf("\\") !== -1 || pathname.indexOf("..") !== -1) return "";
-    if (!ALLOWED_PATHS[pathname]) return "";
+    if (pathname.charAt(0) !== "/") return "";
+    if (pathname.length > 180) return "";
+    if (!/^\/[a-zA-Z0-9._~/-]*$/.test(pathname)) return "";
     return pathname;
-  }
-
-  function signalOn(env) {
-    var dnt = env.doNotTrack;
-    if (dnt === "1" || dnt === "yes") return true;
-    return env.globalPrivacyControl === true;
   }
 
   function plan(env) {
     env = env || {};
     var endpoint = normalizeEndpoint(env.endpoint);
     if (!endpoint) return { ok: false, reason: "endpoint" };
-    if (env.analytics !== true) return { ok: false, reason: "consent" };
-    if (signalOn(env)) return { ok: false, reason: "signal" };
     var host = String(env.hostname || "").toLowerCase();
     if (host !== "wickquiz.com" && host !== "www.wickquiz.com") return { ok: false, reason: "host" };
-    if (env.search) return { ok: false, reason: "query" };
     if (env.hash === "#toggle-goatcounter") return { ok: false, reason: "hash" };
     var path = safePath(env.pathname || "/");
     if (!path) return { ok: false, reason: "path" };
@@ -62,18 +48,13 @@
   }
 
   function liveEnv() {
-    var consent = root.WickConsent && root.WickConsent.analyticsOn ? root.WickConsent.analyticsOn() : false;
-    var nav = root.navigator || {};
     var loc = root.location || { hostname: "", pathname: "/", search: "", hash: "" };
     return {
       endpoint: root.WICK_GOATCOUNTER_ENDPOINT || "",
-      analytics: consent === true,
       hostname: loc.hostname,
       pathname: loc.pathname,
       search: loc.search,
       hash: loc.hash,
-      doNotTrack: nav.doNotTrack || root.doNotTrack || nav.msDoNotTrack || "",
-      globalPrivacyControl: nav.globalPrivacyControl === true,
       title: root.document && root.document.title ? root.document.title : "Wick"
     };
   }
@@ -162,13 +143,6 @@
     }
   }
 
-  function onConsent(event) {
-    var detail = event && event.detail;
-    if (detail && detail.analytics === true) start();
-    else stop();
-  }
-
-  root.addEventListener("wick-consent", onConsent);
   if (root.document && root.document.readyState === "loading") {
     root.document.addEventListener("DOMContentLoaded", start);
   } else {

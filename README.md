@@ -17,7 +17,7 @@ The free game scores one category a day. `window.WICK_IS_PRO` remains in the cod
 
 An account is optional. Email confirmation is required by the live Auth settings (`mailer_autoconfirm` false on 7 November 2026). Before real sign-ups, set the Supabase Site URL to `https://wickquiz.com` and allow `https://wickquiz.com/auth.html` as a redirect. This repository does not change that configuration and does not send confirmation email. Rankings keep the device id already on the browser. Signing in does not copy it onto the account.
 
-Optional GoatCounter page counts use `https://zachfrenchwickquiz.goatcounter.com/count` and `https://gc.zgo.at/count.js`. The script loads only after an opt-in, only on wickquiz.com, and not when Do Not Track or Global Privacy Control is set. The dashboard is not embedded. A signed-in check reported Europe/London, a login-only dashboard, and individual pageviews off. GoatCounter email verification was still pending. Nothing here is a statement of legal compliance.
+GoatCounter counts visits on wickquiz.com. It is a cookie-free counter and stores nothing on the device, so the site does not ask for permission and does not show a banner. The script is `https://gc.zgo.at/count.js` and the endpoint is `https://zachfrenchwickquiz.goatcounter.com/count`. Other hosts are not counted. The dashboard is not embedded. Nothing here is a statement of legal compliance.
 
 Published with GitHub Pages from this repository at [wickquiz.com](https://wickquiz.com). The repository zachfrench939.github.io does not serve that domain.
 
@@ -49,7 +49,7 @@ Published paths:
 - `/privacy.html`, `/cookies.html`, `/auth.html`
 - `/404.html`
 
-`.github/workflows/archive.yml` runs the same script each day and commits new archive pages. Page counts are not extended to these paths.
+`.github/workflows/archive.yml` runs the same script each day and commits new archive pages. GoatCounter counts these paths on wickquiz.com as page loads.
 
 ### Manual steps
 

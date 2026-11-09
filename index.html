@@ -37,68 +37,55 @@
           <span>Wick</span>
         </h1>
         <div class="tools">
-          <button type="button" id="streak-pill" class="streak-pill" aria-haspopup="dialog" aria-controls="streak-panel">
-            <span class="streak-flame" aria-hidden="true">🔥</span>
-            <span id="pill-count">0</span>
-            <span class="week-dots" id="week-dots" aria-hidden="true"></span>
-          </button>
           <p class="timer" id="timer" hidden>
             <span class="visually-hidden">Seconds left </span><span id="timer-clock">60</span>
             <span id="time-pop" class="time-pop" aria-hidden="true"></span>
           </p>
-          <button type="button" id="sound-toggle" aria-pressed="false" aria-label="Sound off">Sound off</button>
+          <button type="button" id="sound-toggle" aria-pressed="false" aria-label="Sound off">Sound</button>
+          <details class="nav-more">
+            <summary>Menu</summary>
+            <div class="nav-menu">
+              <a href="about/">How to play</a>
+              <a href="faq/">FAQ</a>
+              <a href="archive/">Past quizzes</a>
+              <button type="button" id="rank-home">Rankings</button>
+              <button type="button" id="streak-pill" class="streak-pill" aria-haspopup="dialog" aria-controls="streak-panel">
+                <span>Streak</span>
+                <span class="streak-flame" aria-hidden="true">🔥</span>
+                <span id="pill-count">0</span>
+                <span class="week-dots" id="week-dots" aria-hidden="true"></span>
+              </button>
+              <div class="practice-row">
+                <label class="visually-hidden" for="practice-category">Practice</label>
+                <select id="practice-category"></select>
+                <button type="button" class="secondary" id="practice-btn">Practice</button>
+              </div>
+              <a href="auth.html" data-auth-link>Account</a>
+              <a href="privacy.html">Privacy</a>
+              <button type="button" class="text-btn" id="archive-btn">Past days</button>
+            </div>
+          </details>
         </div>
       </div>
-      <nav class="site-nav" aria-label="Site">
-        <a href="index.html" aria-current="page">Play</a>
-        <a href="about/">How to play</a>
-        <details class="nav-more">
-          <summary>Menu</summary>
-          <div class="nav-menu">
-            <a href="faq/">FAQ</a>
-            <a href="archive/">Past quizzes</a>
-            <a href="privacy.html">Privacy</a>
-            <a href="cookies.html">Cookies</a>
-            <a href="auth.html" data-auth-link>Account</a>
-            <button type="button" data-manage-cookies>Manage cookies</button>
-          </div>
-        </details>
-      </nav>
     </header>
     <main id="main" tabindex="-1">
       <section id="screen-start">
         <div id="daily-open">
-          <p class="day-label" id="day-open">Wick</p>
-          <h2 class="choice-heading" id="today-choice">Pick one category</h2>
-          <p class="lede" id="pick-prompt">Tap a card. You confirm before it becomes today's scored game.</p>
-          <p class="day-note" id="day-note">Same three for everyone, until midnight UK time.</p>
-          <p id="load-status" class="status-line" role="status">Loading today's categories.</p>
+          <h2 class="choice-heading" id="pick-prompt">Pick one.</h2>
+          <p id="load-status" class="visually-hidden" role="status">Loading.</p>
           <div id="category-cards" class="category-cards"></div>
           <p id="load-error" class="error" hidden>The questions did not load. <button type="button" id="retry-load">Try again</button></p>
           <p class="tomorrow" id="tomorrow-line"></p>
-          <p class="home-nudge" id="home-nudge"></p>
-          <p class="compare" id="compare-home" hidden></p>
-          <details class="more-sheet">
-            <summary>Practice, streak and rules</summary>
-            <div class="sheet-body">
-              <div class="practice-row">
-                <label class="practice-label" for="practice-category">Practice, not scored</label>
-                <select id="practice-category"></select>
-                <button type="button" class="secondary" id="practice-btn">Practice for 1 minute</button>
-              </div>
-              <p class="best-label">Daily streak</p>
-              <p class="best-num streak-hero" id="open-streak">0</p>
-              <ul class="badges" id="open-badges" aria-label="Daily streak badges"></ul>
-              <p class="best-label">Best scored game</p>
-              <p class="best-num" id="best-score">—</p>
-              <p class="sheet-links">
-                <button type="button" class="text-btn" id="rank-home">Today's rankings</button>
-                <button type="button" class="text-btn" id="archive-btn">Past days</button>
-              </p>
-              <p class="countdown" id="next-open">A new Wick starts at midnight.</p>
-              <p>A correct answer adds 2 seconds. A miss adds none and pauses the buttons for 2 seconds. One finished category keeps the daily streak. Practice does not.</p>
-            </div>
-          </details>
+          <div class="visually-hidden">
+            <p id="day-open"></p>
+            <p id="day-note"></p>
+            <p id="home-nudge"></p>
+            <p id="compare-home"></p>
+            <p id="open-streak">0</p>
+            <ul id="open-badges"></ul>
+            <p id="best-score">—</p>
+            <p id="next-open"></p>
+          </div>
         </div>
         <div id="daily-done" hidden>
           <p class="day-label" id="day-done">Wick</p>
@@ -129,8 +116,8 @@
               <span class="cooldown-track" aria-hidden="true"><span id="cooldown-bar"></span></span>
             </p>
             <div class="play-actions">
-              <button type="button" class="primary" id="next-btn" hidden>Next question</button>
-              <button type="button" class="ghost" id="end-btn">End game</button>
+              <button type="button" class="primary" id="next-btn" hidden>Next</button>
+              <button type="button" class="ghost" id="end-btn">End</button>
             </div>
           </div>
           <div class="candle-panel" id="candle-panel" aria-hidden="true">
@@ -183,32 +170,25 @@
         <p class="come-back" id="come-back">Come back tomorrow for new categories.</p>
         <p class="countdown" id="next-end">New Wick in 00:00:00</p>
         <div class="end-actions">
-          <button type="button" class="primary" id="share-btn">Share result</button>
+          <button type="button" class="primary" id="share-btn">Share</button>
           <p id="share-status" role="status"></p>
           <div id="share-fallback" hidden>
             <p>Select the result below and copy it.</p>
             <textarea id="share-text" readonly spellcheck="false" aria-label="Result text to copy"></textarea>
           </div>
           <p class="sheet-links">
-            <button type="button" class="text-btn" id="rank-end">Today's rankings</button>
-            <button type="button" class="text-btn" id="again-btn">Practice this category again</button>
+            <button type="button" class="text-btn" id="rank-end">Rankings</button>
+            <button type="button" class="text-btn" id="again-btn">Practice</button>
           </p>
         </div>
       </section>
     </main>
     <footer>
-      <p class="foot-logo"><img src="brand/logo-mark.svg" alt="" width="42" height="36"><span>Wick</span></p>
-      <p class="foot-note">Scores stay on this device. Rankings send only a result. Page counts stay off until you allow them.</p>
       <nav aria-label="Information">
         <a href="about/">How to play</a>
         <a href="faq/">FAQ</a>
-        <a href="archive/">Past quizzes</a>
-        <a href="geography-quiz/">Geography quiz</a>
-        <a href="science-quiz/">Science quiz</a>
         <a href="privacy.html">Privacy</a>
-        <a href="cookies.html">Cookies and storage</a>
-        <a href="auth.html">Account</a>
-        <button type="button" data-manage-cookies>Manage cookies</button>
+        <a href="cookies.html">Cookies</a>
       </nav>
     </footer>
     <noscript>
@@ -229,7 +209,7 @@
       <dl class="mini-stats" id="personal-stats"></dl>
       <div id="personal-hist" class="hist" aria-hidden="true"></div>
       <div class="modal-actions">
-        <button type="button" id="open-rank">Today's rankings</button>
+        <button type="button" id="open-rank">Rankings</button>
         <button type="button" class="secondary" id="streak-close">Close</button>
       </div>
     </div>
@@ -253,8 +233,8 @@
       <h2 id="pick-title">Pick this category?</h2>
       <p id="pick-copy">Pick your category for today. You can only choose one!</p>
       <div class="modal-actions">
-        <button type="button" id="pick-yes">Play this category</button>
-        <button type="button" class="secondary" id="pick-no">Choose a different one</button>
+        <button type="button" id="pick-yes">Play</button>
+        <button type="button" class="secondary" id="pick-no">Back</button>
       </div>
     </div>
   </div>
@@ -274,8 +254,8 @@
       <h2 id="confirm-title">End this game?</h2>
         <p id="confirm-copy">Ending now keeps this as today's scored Wick.</p>
       <div class="modal-actions">
-        <button type="button" id="confirm-yes">End now</button>
-        <button type="button" class="secondary" id="confirm-no">Keep playing</button>
+        <button type="button" id="confirm-yes">End</button>
+        <button type="button" class="secondary" id="confirm-no">Back</button>
       </div>
     </div>
   </div>
